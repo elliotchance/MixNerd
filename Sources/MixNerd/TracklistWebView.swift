@@ -28,10 +28,16 @@ struct TracklistWebView: NSViewRepresentable { // macOS, not iOS
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             DispatchQueue.main.async(execute: { [setTracklist = self.setTracklist] in
-                let currentTitle = webView.title ?? ""
-                if let currentURL = webView.url?.absoluteString {
-                    UserDefaults.standard.set(currentURL, forKey: "currentURLString")
+                let currentURL = webView.url?.absoluteString ?? ""
+                if !currentURL.hasPrefix("https://www.1001tracklists.com/tracklist/") {
+                    setTracklist(nil)
+                    return
                 }
+
+                let currentTitle = webView.title ?? ""
+                // if let currentURL = webView.url?.absoluteString {
+                //     UserDefaults.standard.set(currentURL, forKey: "currentURLString")
+                // }
 
                 // Extract background image URL from div#bgArt
                 let js = """
