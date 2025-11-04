@@ -1,48 +1,56 @@
 import SwiftUI
 import WebKit
 
-struct TracklistWebView: View {
-    @AppStorage("pageTitle") private var pageTitle: String = ""
-    @AppStorage("currentURLString") private var currentURLString: String = ""
-    private let initialURL = URL(
-        string:
-            "https://www.1001tracklists.com/tracklist/2klx8j7t/armin-van-buuren-ruben-de-ronde-ferry-corsten-a-state-of-trance-1248-ade-special-amsterdam-dance-event-netherlands-2025-10-23.html"
-    )!
-    private let tracklistWebViewWidth = 350.0
-    var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 0) {
-                CustomWebView(
-                    url: initialURL
-                )
-                .frame(width: geometry.size.width - tracklistWebViewWidth, height: geometry.size.height)
-                .border(Color.gray.opacity(0.3))
-                .clipped()
+struct TracklistWebView: NSViewRepresentable { // macOS, not iOS
+    let url: URL
+    let setMetadata: @Sendable (TracklistMetadata) -> Void
+    func makeCoordinator() -> Coordinator {
+        Coordinator(setMetadata: setMetadata)
+    }
 
-                Divider()
+    func makeNSView(context: Context) -> WKWebView {
+        let webView = WKWebView()
+        webView.navigationDelegate = context.coordinator
+        return webView
+    }
 
-                HStack {
-                    let urlString = currentURLString.isEmpty ? initialURL.absoluteString : currentURLString
-                    if urlString.hasPrefix("https://www.1001tracklists.com/tracklist/") {
-                        TracklistView()
-                    } else {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Not a track list page")
-                                .font(.headline)
-                            Text("Open a URL starting with \"https://www.1001tracklists.com/tracklist/\" to see track details.")
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
+    func updateNSView(_ nsView: WKWebView, context: Context) {
+        nsView.load(URLRequest(url: url))
+    }
+
+    class Coordinator: NSObject, WKNavigationDelegate {
+        let setMetadata: @Sendable (TracklistMetadata) -> Void
+        init(setMetadata: @escaping @Sendable (TracklistMetadata) -> Void) {
+            self.setMetadata = setMetadata
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            DispatchQueue.main.async(execute: { [setMetadata = self.setMetadata] in
+                let currentTitle = webView.title ?? ""
+                UserDefaults.standard.set(currentTitle, forKey: "pageTitle")
+                if let currentURL = webView.url?.absoluteString {
+                    UserDefaults.standard.set(currentURL, forKey: "currentURLString")
+                }
+
+                // Extract background image URL from div#bgArt
+                let js = """
+                (function() {
+                  var el = document.getElementById('artworkLeft');
+                  if (!el) { return ''; }
+                  var bg = window.getComputedStyle(el).backgroundImage || el.style.backgroundImage || '';
+                  return bg.substr(5, bg.length-7);
+                })();
+                """
+                var artworkURL = ""
+                webView.evaluateJavaScript(js) { result, _ in
+                    if let urlString = result as? String, !urlString.isEmpty {
+                        UserDefaults.standard.set(urlString, forKey: "bgArtURLString")
+                        artworkURL = urlString
                     }
                 }
-                .frame(width: tracklistWebViewWidth, height: geometry.size.height)
-                .background(Color(NSColor.windowBackgroundColor))
-            }
-            .onAppear {
-                if currentURLString.isEmpty {
-                    currentURLString = initialURL.absoluteString
-                }
-            }
+
+                setMetadata(TracklistMetadata(artworkURL: artworkURL, date: "2000-01-01", artist: "", title: currentTitle, source: ""))
+            })
         }
     }
 }

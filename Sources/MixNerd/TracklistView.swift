@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct TracklistView: View {
-  @State private var imageURL = URL(string: "https://picsum.photos/600/200")!
+  @AppStorage("bgArtURLString") private var bgArtURLString: String = ""
+  @AppStorage("tracklistDate") var date: String = ""
   @State private var artist = ""
   @AppStorage("pageTitle") var title: String = ""
   @State private var source = ""
@@ -9,19 +10,19 @@ struct TracklistView: View {
     Track(time: "00:00", artist: "Satoshi Tomiie", title: "Love In Traffic"),
     Track(time: "06:18", artist: "Utah Saints", title: "Lost Vagueness (Oliver Lieb Remix)"),
   ]
+  let artworkSize = 350.0 // in pixels
 
   var body: some View {
     VStack(spacing: 0) {
-      // 1️⃣ Image panel
-      AsyncImage(url: imageURL) { phase in
+      AsyncImage(url: URL(string: bgArtURLString).flatMap { $0 } ?? URL(string: "https://picsum.photos/600/200")!) { phase in
         switch phase {
         case .empty:
-          ProgressView().frame(maxWidth: .infinity, maxHeight: 200)
+          ProgressView().frame(maxWidth: artworkSize, maxHeight: artworkSize)
         case .success(let image):
           image
             .resizable()
             .scaledToFill()
-            .frame(maxWidth: .infinity, maxHeight: 200)
+            .frame(maxWidth: artworkSize, maxHeight: artworkSize)
             .clipped()
         case .failure:
           Color.gray.overlay(Text("Failed to load image").foregroundColor(.white))
@@ -32,24 +33,24 @@ struct TracklistView: View {
 
       Divider()
 
-      // 2️⃣ Form panel
       Form {
+        TextField("Date", text: $date)
         TextField("Artist", text: $artist)
         TextField("Title", text: $title)
         TextField("Source", text: $source)
       }
-      .frame(maxHeight: 180)
+      .padding(.vertical)
+      .padding(.horizontal)
       .scrollContentBackground(.hidden)
+      .frame(maxWidth: artworkSize)
 
       Divider()
 
-      // 3️⃣ Track list panel
       List(tracks) { track in
-        Text("[\(track.time)] \(track.artist) - \(track.title)")
+        Text(track.String())
           .font(.system(.body, design: .monospaced))
       }
     }
-    .padding()
     .frame(minWidth: 400, minHeight: 600)
   }
 }
