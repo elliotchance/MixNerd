@@ -1,16 +1,18 @@
 import SwiftUI
 import WebKit
 
-struct TracklistMetadata {
-    var artworkURL: String
-    var date: String
-    var artist: String
-    var title: String
-    var source: String
+class TracklistEditorState: ObservableObject, @unchecked Sendable {
+    @Published var tracklist: Tracklist?
+    
+    @MainActor
+    func setTracklist(_ tl: Tracklist?) {
+        tracklist = tl
+    }
+
 }
 
 struct TracklistEditorWebView: View {
-    @AppStorage("pageTitle") private var pageTitle: String = ""
+    @StateObject private var state = TracklistEditorState()
     @AppStorage("currentURLString") private var currentURLString: String = ""
     private let initialURL = URL(
         string:
@@ -23,8 +25,11 @@ struct TracklistEditorWebView: View {
             HStack(spacing: 0) {
                 TracklistWebView(
                     url: initialURL,
-                    setMetadata: { metadata in
-                        print("metadata: \(metadata)")
+                    setTracklist: { [state] tl in
+                        print("tracklist: \(String(describing: tl))")
+                        Task { @MainActor in
+                            state.setTracklist(tl)
+                        }
                     }
                 )
                 .frame(width: geometry.size.width - tracklistWebViewWidth, height: geometry.size.height)
@@ -36,7 +41,7 @@ struct TracklistEditorWebView: View {
                 HStack {
                     let urlString = currentURLString.isEmpty ? initialURL.absoluteString : currentURLString
                     if urlString.hasPrefix("https://www.1001tracklists.com/tracklist/") {
-                        TracklistView()
+                        TracklistView(tracklist: $state.tracklist)
                     } else {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Not a track list page")

@@ -3,9 +3,10 @@ import WebKit
 
 struct TracklistWebView: NSViewRepresentable { // macOS, not iOS
     let url: URL
-    let setMetadata: @Sendable (TracklistMetadata) -> Void
+    let setTracklist: @Sendable (Tracklist?) -> Void
+
     func makeCoordinator() -> Coordinator {
-        Coordinator(setMetadata: setMetadata)
+        Coordinator(setTracklist: setTracklist)
     }
 
     func makeNSView(context: Context) -> WKWebView {
@@ -19,15 +20,16 @@ struct TracklistWebView: NSViewRepresentable { // macOS, not iOS
     }
 
     class Coordinator: NSObject, WKNavigationDelegate {
-        let setMetadata: @Sendable (TracklistMetadata) -> Void
-        init(setMetadata: @escaping @Sendable (TracklistMetadata) -> Void) {
-            self.setMetadata = setMetadata
+        let setTracklist: @Sendable (Tracklist?) -> Void
+
+        init(setTracklist: @escaping @Sendable (Tracklist?) -> Void) {
+            self.setTracklist = setTracklist
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            DispatchQueue.main.async(execute: { [setMetadata = self.setMetadata] in
+            DispatchQueue.main.async(execute: { [setTracklist = self.setTracklist] in
                 let currentTitle = webView.title ?? ""
-                UserDefaults.standard.set(currentTitle, forKey: "pageTitle")
+                // UserDefaults.standard.set(currentTitle, forKey: "pageTitle")
                 if let currentURL = webView.url?.absoluteString {
                     UserDefaults.standard.set(currentURL, forKey: "currentURLString")
                 }
@@ -49,7 +51,13 @@ struct TracklistWebView: NSViewRepresentable { // macOS, not iOS
                     }
                 }
 
-                setMetadata(TracklistMetadata(artworkURL: artworkURL, date: "2000-01-01", artist: "", title: currentTitle, source: ""))
+                setTracklist(Tracklist(
+                    artworkURL: artworkURL,
+                    date: "2000-01-01",
+                    artist: "",
+                    title: currentTitle,
+                    source: "",
+                ))
             })
         }
     }
