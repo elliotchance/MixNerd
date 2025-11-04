@@ -46,8 +46,20 @@ struct TracklistView: View {
           TextField("Title", text: Binding(get: { tracklist.title }, set: { tracklist.title = $0 }))
           TextField("Source", text: Binding(get: { tracklist.source }, set: { tracklist.source = $0 }))
 
-          ForEach(tracklist.tracks) { track in
-            TextField("", text: Binding(get: { track.String() }, set: { _ in }))
+          ForEach(Array(tracklist.tracks.enumerated()), id: \.element.id) { index, track in
+            HStack(alignment: .top) {
+              VStack {
+                Text(String(format: "%02d", index + 1))
+                TextField("", text: Binding(get: { track.time }, set: { _ in }))
+                  .frame(width: 80)
+                  .font(.system(.body, design: .monospaced))
+              }
+              VStack {
+                TextField("", text: Binding(get: { track.artist }, set: { _ in }))
+                TextField("", text: Binding(get: { track.title }, set: { _ in }))
+              }
+            }
+            Divider()
           }
         }
         .padding(.vertical)
