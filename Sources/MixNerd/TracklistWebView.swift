@@ -35,9 +35,6 @@ struct TracklistWebView: NSViewRepresentable { // macOS, not iOS
                 }
 
                 let currentTitle = webView.title ?? ""
-                // if let currentURL = webView.url?.absoluteString {
-                //     UserDefaults.standard.set(currentURL, forKey: "currentURLString")
-                // }
 
                 // Extract background image URL from div#bgArt
                 let js = """
