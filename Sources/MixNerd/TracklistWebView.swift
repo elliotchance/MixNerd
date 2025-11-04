@@ -29,7 +29,6 @@ struct TracklistWebView: NSViewRepresentable { // macOS, not iOS
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             DispatchQueue.main.async(execute: { [setTracklist = self.setTracklist] in
                 let currentTitle = webView.title ?? ""
-                // UserDefaults.standard.set(currentTitle, forKey: "pageTitle")
                 if let currentURL = webView.url?.absoluteString {
                     UserDefaults.standard.set(currentURL, forKey: "currentURLString")
                 }

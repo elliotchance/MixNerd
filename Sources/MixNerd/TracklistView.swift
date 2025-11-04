@@ -2,10 +2,6 @@ import SwiftUI
 
 struct TracklistView: View {
   @AppStorage("bgArtURLString") private var bgArtURLString: String = ""
-  @AppStorage("tracklistDate") var date: String = ""
-  @State private var artist = ""
-  // @Binding var title: String
-  @State private var source = ""
   @State private var tracks: [Track] = [
     Track(time: "00:00", artist: "Satoshi Tomiie", title: "Love In Traffic"),
     Track(time: "06:18", artist: "Utah Saints", title: "Lost Vagueness (Oliver Lieb Remix)"),
@@ -35,10 +31,10 @@ struct TracklistView: View {
       Divider()
 
       Form {
-        TextField("Date", text: $date)
-        TextField("Artist", text: $artist)
+        TextField("Date", text: Binding(get: { tracklist?.date ?? "" }, set: { tracklist?.date = $0 }))
+        TextField("Artist", text: Binding(get: { tracklist?.artist ?? "" }, set: { tracklist?.artist = $0 }))
         TextField("Title", text: Binding(get: { tracklist?.title ?? "" }, set: { tracklist?.title = $0 }))
-        TextField("Source", text: $source)
+        TextField("Source", text: Binding(get: { tracklist?.source ?? "" }, set: { tracklist?.source = $0 }))
       }
       .padding(.vertical)
       .padding(.horizontal)
