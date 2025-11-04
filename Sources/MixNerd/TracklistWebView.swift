@@ -58,9 +58,9 @@ struct TracklistWebView: NSViewRepresentable { // macOS, not iOS
 
                 setTracklist(Tracklist(
                     artworkURL: artworkURL,
-                    date: "2000-01-01",
-                    artist: "",
-                    title: currentTitle,
+                    date: TitleParser().parseDate(currentTitle),
+                    artist: TitleParser().parseArtist(currentTitle),
+                    title: TitleParser().parseTitle(currentTitle),
                     source: "",
                 ))
             })
