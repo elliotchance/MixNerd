@@ -4,12 +4,13 @@ struct TracklistView: View {
   @AppStorage("bgArtURLString") private var bgArtURLString: String = ""
   @AppStorage("tracklistDate") var date: String = ""
   @State private var artist = ""
-  @AppStorage("pageTitle") var title: String = ""
+  // @Binding var title: String
   @State private var source = ""
   @State private var tracks: [Track] = [
     Track(time: "00:00", artist: "Satoshi Tomiie", title: "Love In Traffic"),
     Track(time: "06:18", artist: "Utah Saints", title: "Lost Vagueness (Oliver Lieb Remix)"),
   ]
+  @Binding var tracklist: Tracklist?
   let artworkSize = 350.0 // in pixels
 
   var body: some View {
@@ -36,7 +37,7 @@ struct TracklistView: View {
       Form {
         TextField("Date", text: $date)
         TextField("Artist", text: $artist)
-        TextField("Title", text: $title)
+        TextField("Title", text: Binding(get: { tracklist?.title ?? "" }, set: { tracklist?.title = $0 }))
         TextField("Source", text: $source)
       }
       .padding(.vertical)
