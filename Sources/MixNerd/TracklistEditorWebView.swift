@@ -13,7 +13,6 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
 
 struct TracklistEditorWebView: View {
     @StateObject private var state = TracklistEditorState()
-    @AppStorage("currentURLString") private var currentURLString: String = ""
     private let initialURL = URL(
         string:
             "https://www.1001tracklists.com/tracklist/2klx8j7t/armin-van-buuren-ruben-de-ronde-ferry-corsten-a-state-of-trance-1248-ade-special-amsterdam-dance-event-netherlands-2025-10-23.html"
@@ -39,9 +38,8 @@ struct TracklistEditorWebView: View {
                 Divider()
 
                 HStack {
-                    let urlString = currentURLString.isEmpty ? initialURL.absoluteString : currentURLString
-                    if urlString.hasPrefix("https://www.1001tracklists.com/tracklist/") {
-                        TracklistView(tracklist: $state.tracklist)
+                    if let tracklist = state.tracklist {
+                        TracklistView(tracklist: Binding(get: { tracklist }, set: { state.setTracklist($0) }))
                     } else {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Not a track list page")
@@ -54,11 +52,6 @@ struct TracklistEditorWebView: View {
                 }
                 .frame(width: tracklistWebViewWidth, height: geometry.size.height)
                 .background(Color(NSColor.windowBackgroundColor))
-            }
-            .onAppear {
-                if currentURLString.isEmpty {
-                    currentURLString = initialURL.absoluteString
-                }
             }
         }
     }
