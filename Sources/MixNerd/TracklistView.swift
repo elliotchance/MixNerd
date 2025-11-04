@@ -3,7 +3,7 @@ import SwiftUI
 struct TracklistView: View {
   @State private var imageURL = URL(string: "https://picsum.photos/600/200")!
   @State private var artist = ""
-  @State private var title = ""
+  @AppStorage("pageTitle") var title: String = ""
   @State private var source = ""
   @State private var tracks: [Track] = [
     Track(time: "00:00", artist: "Satoshi Tomiie", title: "Love In Traffic"),
