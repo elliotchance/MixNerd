@@ -6,12 +6,12 @@ struct TracklistView: View {
     Track(time: "00:00", artist: "Satoshi Tomiie", title: "Love In Traffic"),
     Track(time: "06:18", artist: "Utah Saints", title: "Lost Vagueness (Oliver Lieb Remix)"),
   ]
-  @Binding var tracklist: Tracklist?
+  @Binding var tracklist: Tracklist
   let artworkSize = 350.0 // in pixels
 
   var body: some View {
     VStack(spacing: 0) {
-      AsyncImage(url: URL(string: bgArtURLString).flatMap { $0 } ?? URL(string: "https://picsum.photos/600/200")!) { phase in
+      AsyncImage(url: URL(string: bgArtURLString).flatMap { $0 }!) { phase in
         switch phase {
         case .empty:
           ProgressView().frame(maxWidth: artworkSize, maxHeight: artworkSize)
@@ -31,10 +31,10 @@ struct TracklistView: View {
       Divider()
 
       Form {
-        TextField("Date", text: Binding(get: { tracklist?.date ?? "" }, set: { tracklist?.date = $0 }))
-        TextField("Artist", text: Binding(get: { tracklist?.artist ?? "" }, set: { tracklist?.artist = $0 }))
-        TextField("Title", text: Binding(get: { tracklist?.title ?? "" }, set: { tracklist?.title = $0 }))
-        TextField("Source", text: Binding(get: { tracklist?.source ?? "" }, set: { tracklist?.source = $0 }))
+        TextField("Date", text: Binding(get: { tracklist.date }, set: { tracklist.date = $0 }))
+        TextField("Artist", text: Binding(get: { tracklist.artist }, set: { tracklist.artist = $0 }))
+        TextField("Title", text: Binding(get: { tracklist.title }, set: { tracklist.title = $0 }))
+        TextField("Source", text: Binding(get: { tracklist.source }, set: { tracklist.source = $0 }))
       }
       .padding(.vertical)
       .padding(.horizontal)

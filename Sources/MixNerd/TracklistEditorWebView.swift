@@ -25,7 +25,6 @@ struct TracklistEditorWebView: View {
                 TracklistWebView(
                     url: initialURL,
                     setTracklist: { [state] tl in
-                        print("tracklist: \(String(describing: tl))")
                         Task { @MainActor in
                             state.setTracklist(tl)
                         }
