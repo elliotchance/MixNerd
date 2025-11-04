@@ -1,9 +1,12 @@
 class TitleParser {
   func parseTitle(title: String) -> String {
-    return title
+    let lastSpaceIndex = title.lastIndex(of: " ")!
+    return String(title[..<lastSpaceIndex])
   }
 
   func parseDate(title: String) -> String {
-    return "2025-10-23"
+    let lastSpaceIndex = title.lastIndex(of: " ")!
+    let dateStartIndex = title.index(after: lastSpaceIndex)
+    return String(title[dateStartIndex...])
   }
 }
