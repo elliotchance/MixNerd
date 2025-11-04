@@ -2,6 +2,7 @@ import SwiftUI
 import WebKit
 
 struct ContentView: View {
+    @AppStorage("pageTitle") private var pageTitle: String = ""
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
