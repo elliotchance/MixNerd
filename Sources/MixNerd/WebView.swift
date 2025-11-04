@@ -24,6 +24,9 @@ struct CustomWebView: NSViewRepresentable { // macOS, not iOS
             let currentTitle = webView.title ?? ""
             DispatchQueue.main.async {
                 UserDefaults.standard.set(currentTitle, forKey: "pageTitle")
+                if let currentURL = webView.url?.absoluteString {
+                    UserDefaults.standard.set(currentURL, forKey: "currentURLString")
+                }
             }
         }
     }
