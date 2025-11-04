@@ -1,12 +1,24 @@
-class TitleParser {
-  func parseTitle(title: String) -> String {
-    let lastSpaceIndex = title.lastIndex(of: " ")!
-    return String(title[..<lastSpaceIndex])
+public class TitleParser {
+  let pattern = #/(.*) [@-] (.*) (\d{4}-\d{2}-\d{2})/#
+
+  public func parseArtist(_ title: String) -> String {
+    if let match = try? pattern.firstMatch(in: title) {
+      return String(match.1)
+    }
+    return ""
   }
 
-  func parseDate(title: String) -> String {
-    let lastSpaceIndex = title.lastIndex(of: " ")!
-    let dateStartIndex = title.index(after: lastSpaceIndex)
-    return String(title[dateStartIndex...])
+  public func parseTitle(_ title: String) -> String {
+    if let match = try? pattern.firstMatch(in: title) {
+      return String(match.2)
+    }
+    return ""
+  }
+
+  public func parseDate(_ title: String) -> String {
+    if let match = try? pattern.firstMatch(in: title) {
+      return String(match.3)
+    }
+    return ""
   }
 }
