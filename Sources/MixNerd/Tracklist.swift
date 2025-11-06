@@ -16,4 +16,5 @@ struct Tracklist {
         Track(time: "50:24", artist: "Tiesto", title: "Adagio For Strings"),
         Track(time: "56:42", artist: "Armin Van Buuren", title: "This Is What It Feels Like"),
     ]
+    var editable: Bool = false
 }

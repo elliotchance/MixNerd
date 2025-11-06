@@ -42,21 +42,28 @@ struct TracklistView: View {
       ScrollView {
         Form {
           TextField("Date", text: Binding(get: { tracklist.date }, set: { tracklist.date = $0 }))
+            .disabled(!tracklist.editable)
           TextField("Artist", text: Binding(get: { tracklist.artist }, set: { tracklist.artist = $0 }))
+            .disabled(!tracklist.editable)
           TextField("Title", text: Binding(get: { tracklist.title }, set: { tracklist.title = $0 }))
+            .disabled(!tracklist.editable)
           TextField("Source", text: Binding(get: { tracklist.source }, set: { tracklist.source = $0 }))
+            .disabled(!tracklist.editable)
 
           ForEach(Array(tracklist.tracks.enumerated()), id: \.element.id) { index, track in
             HStack(alignment: .top) {
               VStack {
                 Text(String(format: "%02d", index + 1))
                 TextField("", text: Binding(get: { track.time }, set: { _ in }))
+                  .disabled(!tracklist.editable)
                   .frame(width: 80)
                   .font(.system(.body, design: .monospaced))
               }
               VStack {
                 TextField("", text: Binding(get: { track.artist }, set: { _ in }))
+                  .disabled(!tracklist.editable)
                 TextField("", text: Binding(get: { track.title }, set: { _ in }))
+                  .disabled(!tracklist.editable)
               }
             }
             Divider()
