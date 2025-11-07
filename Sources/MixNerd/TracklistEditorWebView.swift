@@ -33,8 +33,9 @@ struct TracklistEditorWebView: View {
                 TracklistWebView(
                     url: initialURL,
                     setTracklist: { [state] tl in
+                        let tracklist = tl
                         Task { @MainActor in
-                            state.setWebTracklist(tl)
+                            state.setWebTracklist(tracklist)
                         }
                     }
                 )
