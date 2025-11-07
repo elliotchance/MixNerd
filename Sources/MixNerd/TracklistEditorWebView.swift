@@ -23,7 +23,7 @@ struct TracklistEditorWebView: View {
     @State private var error: Error?
     private let initialURL = URL(
         string:
-            "https://www.1001tracklists.com/tracklist/2klx8j7t/armin-van-buuren-ruben-de-ronde-ferry-corsten-a-state-of-trance-1248-ade-special-amsterdam-dance-event-netherlands-2025-10-23.html"
+            "https://www.1001tracklists.com/tracklist/2xbh9b9/armin-van-buuren-a-state-of-trance-000-2001-05-18.html"
     )!
     private let tracklistWebViewHeight = 200.0
     
