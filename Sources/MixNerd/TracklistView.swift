@@ -60,13 +60,13 @@ struct TracklistView: View {
           ForEach(Array(tracklist.tracks.enumerated()), id: \.element.id) { index, track in
             HStack(alignment: .top) {
               VStack {
-                Text(String(format: "%02d", index + 1))
-                .controlSize(.large)
+                Text(String(format: "%02d", index + 1)).font(.title3).bold()
                 
                 TextField("", text: Binding(get: { track.time }, set: { _ in }))
                   .disabled(!tracklist.editable)
                   .frame(width: 80)
                   .font(.system(.body, design: .monospaced))
+                  .multilineTextAlignment(.trailing)
               }
               VStack {
                 TextField("", text: Binding(get: { track.artist }, set: { _ in }))
