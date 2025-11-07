@@ -1,6 +1,7 @@
 import SwiftUI
 import WebKit
 import ID3TagEditor
+import AppKit
 
 struct AudioFileEditorView: View {
     @State private var isOpeningFile: Bool = false
@@ -38,7 +39,7 @@ struct AudioFileEditorView: View {
         .frame(maxHeight: .infinity, alignment: .top)
         .fileImporter(
             isPresented: $isOpeningFile,
-            allowedContentTypes: [.mp3],
+            allowedContentTypes: [.folder],
             allowsMultipleSelection: false
         ) { result in
             switch result {
@@ -47,25 +48,53 @@ struct AudioFileEditorView: View {
                 do {
                     // Start accessing the security-scoped resource
                     guard selectedURL.startAccessingSecurityScopedResource() else {
-                        throw NSError(domain: "FileAccessError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Could not access the selected file."])
+                        throw NSError(domain: "FileAccessError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Could not access the selected folder."])
                     }
                     defer {
                         selectedURL.stopAccessingSecurityScopedResource()
                     }
 
-                    // Get the file path from the URL
-                    let filePath = selectedURL.path
-                    fileName = selectedURL.lastPathComponent
+                    // Scan mp3 and cue files in the folder
+                    let files = try FileManager.default.contentsOfDirectory(at: selectedURL, includingPropertiesForKeys: nil)
+                    var foundTracklist: Tracklist?
                     
-                    // Create ID3TagEditor instance and read the tag
-                    let id3TagEditor = ID3TagEditor()
-                    if let id3Tag = try id3TagEditor.read(from: filePath) {
-                        let tagContentReader = ID3TagContentReader(id3Tag: id3Tag)
-                        tracklist = Tracklist(
-                            artist: stringValue(tagContentReader.artist()),
-                            title: stringValue(tagContentReader.title()),
-                            editable: true,
-                        )
+                    for file in files {
+                        if file.pathExtension == "mp3" {
+                            let id3TagEditor = ID3TagEditor()
+                            if let id3Tag = try id3TagEditor.read(from: file.path) {
+                                let tagContentReader = ID3TagContentReader(id3Tag: id3Tag)
+                                
+                                // Extract artwork if available
+                                var artwork: NSImage? = nil
+                                if let pictureFrame = id3Tag.frames[.attachedPicture(.frontCover)] as? ID3FrameAttachedPicture {
+                                    let pictureData = pictureFrame.picture
+                                    artwork = NSImage(data: pictureData)
+                                }
+                                
+                                foundTracklist = Tracklist(
+                                    artwork: artwork,
+                                    artist: stringValue(tagContentReader.artist()),
+                                    title: stringValue(tagContentReader.title()),
+                                    // source: stringValue(tagContentReader.itunesGrouping()),
+                                    editable: true,
+                                )
+                            }
+                            fileName = file.lastPathComponent
+                        }
+                        if file.pathExtension == "cue" {
+                            let cueContent = try String(contentsOf: file, encoding: .utf8)
+                            if let cueFile = CueFile.parse(cueContent) {
+                                if foundTracklist != nil {
+                                    foundTracklist?.tracks = cueFile.tracks
+                                } else {
+                                    foundTracklist = cueFile
+                                }
+                            }
+                        }
+                    }
+                    
+                    if let tracklist = foundTracklist {
+                        self.tracklist = tracklist
                     }
                 } catch {
                     self.error = error
