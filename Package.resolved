@@ -1,0 +1,15 @@
+{
+  "originHash" : "12b46bc590a614d95e59dc718a2e52181eae35a79cb9cf1938cc8ee49a9ddab8",
+  "pins" : [
+    {
+      "identity" : "id3tageditor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/chicio/ID3TagEditor.git",
+      "state" : {
+        "revision" : "adcebd1680ac1a93f8a95f84c515680cac3c69d6",
+        "version" : "5.4.0"
+      }
+    }
+  ],
+  "version" : 3
+}

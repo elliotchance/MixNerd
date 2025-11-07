@@ -12,9 +12,13 @@ let package = Package(
             targets: ["MixNerd"]
         )
     ],
+    dependencies: [
+        .package(url: "https://github.com/chicio/ID3TagEditor.git", from: "5.0.0")
+    ],
     targets: [
         .executableTarget(
             name: "MixNerd",
+            dependencies: ["ID3TagEditor"],
             path: "Sources/MixNerd",
             resources: [
                 .process("Resources")

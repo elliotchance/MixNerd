@@ -3,7 +3,7 @@ import SwiftUI
 struct TracklistView: View {
   @AppStorage("bgArtURLString") private var bgArtURLString: String = ""
   @Binding var tracklist: Tracklist
-  let artworkSize = 200.0 // in pixels
+  let artworkSize = 200.0 - 30.0 // in pixels
 
   var body: some View {
     HStack(alignment: .top, spacing: 0) {
@@ -72,7 +72,7 @@ struct TracklistView: View {
         .padding(.vertical)
         .padding(.horizontal)
       }
-      .frame(height: 200)
+      .frame(height: artworkSize)
     }
   }
 }
