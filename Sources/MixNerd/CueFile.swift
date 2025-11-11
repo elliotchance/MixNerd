@@ -14,7 +14,7 @@ class CueFile {
             }
             
             // Parse PERFORMER (album artist)
-            if trimmed.uppercased().hasPrefix("PERFORMER") {
+            if trimmed.uppercased().hasPrefix("PERFORMER") && currentTrack == nil {
                 if let performer = extractQuotedValue(trimmed) {
                     tracklist.artist = performer
                 }
@@ -36,12 +36,12 @@ class CueFile {
             }
             
             // Parse FILE (audio file reference)
-            if trimmed.uppercased().hasPrefix("FILE") {
-                if let filename = extractQuotedValue(trimmed) {
-                    tracklist.source = filename
-                }
-                continue
-            }
+            // if trimmed.uppercased().hasPrefix("FILE") {
+            //     if let filename = extractQuotedValue(trimmed) {
+            //         tracklist.source = filename
+            //     }
+            //     continue
+            // }
             
             // Parse TRACK
             if trimmed.uppercased().hasPrefix("TRACK") {

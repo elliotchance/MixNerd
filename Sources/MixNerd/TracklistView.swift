@@ -62,11 +62,20 @@ struct TracklistView: View {
               VStack {
                 Text(String(format: "%02d", index + 1)).font(.title3).bold()
                 
-                TextField("", text: Binding(get: { track.time }, set: { _ in }))
-                  .disabled(!tracklist.editable)
-                  .frame(width: 80)
-                  .font(.system(.body, design: .monospaced))
-                  .multilineTextAlignment(.trailing)
+                if track.time != "" {
+                  TextField("", text: Binding(get: { track.time }, set: { _ in }))
+                    .disabled(!tracklist.editable)
+                    .frame(width: 80)
+                    .font(.system(.body, design: .monospaced))
+                    .multilineTextAlignment(.trailing)
+                } else {
+                  TextField("", text: Binding(get: { "12:34" }, set: { _ in }))
+                    .disabled(!tracklist.editable)
+                    .frame(width: 80)
+                    .font(.system(.body, design: .monospaced))
+                    .multilineTextAlignment(.trailing)
+                    .background(Color.red.opacity(0.5))
+                }
               }
               VStack {
                 TextField("", text: Binding(get: { track.artist }, set: { _ in }))
