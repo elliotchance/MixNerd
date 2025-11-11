@@ -7,7 +7,7 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
 
   @MainActor
   func setWebTracklist(_ tl: Tracklist?) {
-    webTracklist = tl
+    webTracklist = tl?.withCalculatedMissingTrackTimes() ?? nil
   }
 
   @MainActor
@@ -21,7 +21,9 @@ struct TracklistEditorWebView: View {
   @State private var isOpeningFile: Bool = false
   @State private var showAlert: Bool = false
   @State private var error: Error?
-  @State private var estimateTrackTimes: Bool = false
+  @AppStorage("TextTracklistView_estimateMissingTrackTimes") private var estimateMissingTrackTimes:
+    Bool = false
+  @AppStorage("TextTracklistView_includeLabels") private var includeLabels: Bool = true
   private let initialURL = URL(
     string:
       "https://www.1001tracklists.com/tracklist/2xbh9b9/armin-van-buuren-a-state-of-trance-000-2001-05-18.html"
@@ -86,7 +88,8 @@ struct TracklistEditorWebView: View {
           TextTracklistView(
             tracklist: Binding(
               get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
-            estimateTrackTimes: $estimateTrackTimes
+            estimateMissingTrackTimes: $estimateMissingTrackTimes,
+            includeLabels: $includeLabels
           )
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)

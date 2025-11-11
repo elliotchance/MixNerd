@@ -9,7 +9,8 @@ import SwiftUI
 
 struct TextTracklistView: View {
   @Binding var tracklist: Tracklist
-  @Binding var estimateTrackTimes: Bool
+  @Binding var estimateMissingTrackTimes: Bool
+  @Binding var includeLabels: Bool
   let artworkSize = 200.0  // in pixels
 
   var body: some View {
@@ -18,7 +19,9 @@ struct TextTracklistView: View {
         .frame(width: artworkSize, height: artworkSize)
 
       Form {
-        Toggle("Estimate track times", isOn: $estimateTrackTimes)
+        Toggle("Estimate missing track times", isOn: $estimateMissingTrackTimes)
+          .toggleStyle(.checkbox)
+        Toggle("Include labels", isOn: $includeLabels)
           .toggleStyle(.checkbox)
       }
       .padding()
@@ -119,12 +122,12 @@ Please set a backlink to keep the tracklist up-to-date: https://1001.tl/2xbh9b9
 
     var trackNumber = 1
     for track in tracklist.tracks {
-      if track.time.isEmpty {
+      if track.timeIsEstimated && !estimateMissingTrackTimes {
         s += "\(String(format: "%02d", trackNumber)). \(track.artist) - \(track.title)"
       } else {
-        s += "[\(track.time)] \(track.artist) - \(track.title)"
+        s += "[\(track.formattedTime())] \(track.artist) - \(track.title)"
       }
-      if !track.label.isEmpty {
+      if includeLabels && !track.label.isEmpty {
         s += " [\(track.label)]"
       }
       s += "\n"
@@ -181,7 +184,7 @@ Please set a backlink to keep the tracklist up-to-date: https://1001.tl/2xbh9b9
 
   private func sanitizedTracklistTitle() -> String {
     let invalidCharacters = CharacterSet(charactersIn: "/\\?%*|\"<>:")
-    let baseName = tracklist.title.isEmpty ? "Tracklist" : tracklist.title
+    let baseName = "\(tracklist.artist) - \(tracklist.title) \(tracklist.date)"
     let sanitized = baseName.components(separatedBy: invalidCharacters).joined(separator: " ")
     let trimmed = sanitized.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? "Tracklist" : trimmed
