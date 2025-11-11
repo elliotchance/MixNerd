@@ -7,41 +7,8 @@ struct TextTracklistView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      Group {
-        if let artwork = tracklist.artwork {
-          Image(nsImage: artwork)
-            .resizable()
-            .scaledToFill()
-            .frame(width: artworkSize, height: artworkSize)
-            .clipped()
-        } else if let url = URL(string: tracklist.artworkURL), !tracklist.artworkURL.isEmpty {
-          AsyncImage(url: url) { phase in
-            switch phase {
-            case .empty:
-              ProgressView()
-                .frame(width: artworkSize, height: artworkSize)
-            case .success(let image):
-              image
-                .resizable()
-                .scaledToFill()
-                .frame(width: artworkSize, height: artworkSize)
-                .clipped()
-            case .failure:
-              Color.gray
-                .frame(width: artworkSize, height: artworkSize)
-                .overlay(Text("Failed to load image").foregroundColor(.white))
-            @unknown default:
-              Color.clear
-                .frame(width: artworkSize, height: artworkSize)
-            }
-          }
-        } else {
-          Color.gray
-            .frame(width: artworkSize, height: artworkSize)
-            .overlay(Text("No image").foregroundColor(.white))
-        }
-      }
-      .frame(width: artworkSize, height: artworkSize)
+      ArtworkView(artwork: Binding(get: { tracklist.artwork }, set: { tracklist.artwork = $0 }))
+        .frame(width: artworkSize, height: artworkSize)
 
       Form {
         Toggle("Estimate track times", isOn: $estimateTrackTimes)
