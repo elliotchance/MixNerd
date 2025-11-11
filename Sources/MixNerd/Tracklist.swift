@@ -9,7 +9,6 @@ struct Tracklist: @unchecked Sendable {
   var source: String = ""
   var genre: String = ""
   var tracks: [Track] = []
-  var editable: Bool = false
 
   // e.g. 1001.tl/1u7zqrvk
   var shortLink: String = ""

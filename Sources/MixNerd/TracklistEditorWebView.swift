@@ -29,6 +29,14 @@ struct TracklistEditorWebView: View {
       "https://www.1001tracklists.com/tracklist/2xbh9b9/armin-van-buuren-a-state-of-trance-000-2001-05-18.html"
   )!
   private let tracklistWebViewWidth = 400.0
+  private let pickerOptions: [String]
+  @State private var selectedPickerOption: String
+
+  init() {
+    let options = ["Tracklist", "some file.mp3 + cue"]
+    pickerOptions = options
+    _selectedPickerOption = State(initialValue: options.last ?? "")
+  }
 
   var body: some View {
     GeometryReader { geometry in
@@ -46,24 +54,6 @@ struct TracklistEditorWebView: View {
         .border(Color.gray.opacity(0.3))
         .clipped()
 
-        // Divider()
-
-        // HStack {
-        //     VStack {
-        //         if let tracklist = state.webTracklist {
-        //             TracklistView(tracklist: Binding(get: { tracklist }, set: { state.setWebTracklist($0) }))
-        //         } else {
-        //             VStack(alignment: .leading, spacing: 8) {
-        //                 Text("Not a track list page")
-        //                     .font(.headline)
-        //                 Text("Open a URL starting with \"https://www.1001tracklists.com/tracklist/\" to see track details.")
-        //                     .foregroundColor(.secondary)
-        //             }
-        //             .padding()
-        //         }
-        //     }
-        //     .frame(width: geometry.size.width * 0.5, height: tracklistWebViewHeight)
-
         VStack(alignment: .leading, spacing: 0) {
           HStack {
             Button("Open...") {
@@ -72,8 +62,10 @@ struct TracklistEditorWebView: View {
             .controlSize(.small)
             .padding()
 
-            Picker("", selection: Binding(get: { "Tracklist" }, set: { _ in })) {
-              Text("Tracklist")
+            Picker("", selection: $selectedPickerOption) {
+              ForEach(pickerOptions, id: \.self) { option in
+                Text(option).tag(option)
+              }
             }
 
             Button("Save") {
@@ -83,14 +75,19 @@ struct TracklistEditorWebView: View {
             .padding()
           }
           .frame(maxWidth: .infinity)
-          .frame(height: 30)
 
-          TextTracklistView(
-            tracklist: Binding(
-              get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
-            estimateMissingTrackTimes: $estimateMissingTrackTimes,
-            includeLabels: $includeLabels
-          )
+          if selectedPickerOption == "Tracklist" {
+            TextTracklistView(
+              tracklist: Binding(
+                get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
+              estimateMissingTrackTimes: $estimateMissingTrackTimes,
+              includeLabels: $includeLabels
+            )
+          } else {
+            AudioFileEditorView(
+              tracklist: Binding(
+                get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }))
+          }
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .frame(width: tracklistWebViewWidth)
