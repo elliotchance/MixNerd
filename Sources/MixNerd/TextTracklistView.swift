@@ -1,5 +1,12 @@
 import SwiftUI
 
+#if os(macOS)
+  import AppKit
+  import UniformTypeIdentifiers
+#else
+  import UIKit
+#endif
+
 struct TextTracklistView: View {
   @Binding var tracklist: Tracklist
   @Binding var estimateTrackTimes: Bool
@@ -27,7 +34,22 @@ struct TextTracklistView: View {
             .frame(minHeight: geometry.size.height, alignment: .topLeading)
             .padding(6)
         }
-        .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
+        .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottomTrailing)
+        .overlay(alignment: .bottomTrailing) {
+          HStack(spacing: 8) {
+            Button {
+              saveTracklistToFile()
+            } label: {
+              Label("Save", systemImage: "square.and.arrow.down")
+            }
+            Button {
+              copyTracklistToClipboard()
+            } label: {
+              Label("Copy", systemImage: "doc.on.doc")
+            }
+          }
+          .padding(12)
+        }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       .overlay(
@@ -66,20 +88,102 @@ Armin van Buuren Non-Stop In The Mix:
 [1:55:55] Armin van Buuren - Blue Fear [CYBER (ARMADA)]
 
 Please set a backlink to keep the tracklist up-to-date: https://1001.tl/38zxw8k
+
+
+Armin van Buuren - A State Of Trance 000 2001-05-18
+
+A State Of Trance Preview Part 1
+01. Satoshi Tomiie ft. Kelli Ali - Love In Traffic (Satoshi Tomiie Dark Path Remix) [INCREDIBLE]
+02. Utah Saints - Lost Vagueness (Oliver Lieb Main Mix) [ECHO]
+[13:25] Orion ft. Rebecca Raine - See Me Here (Skope Vocal Mix) [MONDO]
+04. Yahel - U Inside [CYBER (ARMADA)]
+05. Transa - Kinetic [HOOK]
+06. Natural Born Grooves - Kickback (TDR Remix) [NATURAL BORN GROOVES]
+07. Perpetuous Dreamer ft. Elles De Graaf - The Sound Of Goodbye (Above & Beyond Remix) [ARMIND (ARMADA)]
+08. Airwave - Mysteries Of Life [BONZAI TRANCE PROG]
+09. Rising Star - Star Theme [ARMIND (ARMADA)]
+A State Of Trance Preview Part 2
+10. Delerium ft. Leigh Nash - Innocente (Mr Sam The Space Between Us Mix) [NETTWERK]
+11. Green Court ft. De Vision - Take (Chrome Romance In Ny Remix) [CLUB CULTURE]
+12. Moogwai - The Labyrinth (Part Two) [PLATIPUS]
+13. Guy Naets & Michel Bierlin - Beam Me Up! [PROGREZ]
+14. Coast 2 Coast ft. Discovery - Home (Tiësto Remix) [ID&T]
+15. Ultra Vibe - Choose Freedom [CAMOUFLAGE (SUBTRAXX)]
+16. System F - Mode Confusion [FLASHOVER]
+17. M.I.K.E. pres. Push - Strange World (Airwave Remix) [BONZAI]
+18. Dennis M - Right Now [REZZONANT]
+
+Please set a backlink to keep the tracklist up-to-date: https://1001.tl/2xbh9b9
 */
     var s = "\(tracklist.artist) - \(tracklist.title) \(tracklist.date)\n\n"
 
+    var trackNumber = 1
     for track in tracklist.tracks {
       if track.time.isEmpty {
-        s += "\(track.artist) - \(track.title)\n"
+        s += "\(String(format: "%02d", trackNumber)). \(track.artist) - \(track.title)"
       } else {
-        s += "[\(track.time)] \(track.artist) - \(track.title)\n"
+        s += "[\(track.time)] \(track.artist) - \(track.title)"
       }
+      if !track.label.isEmpty {
+        s += " [\(track.label)]"
+      }
+      s += "\n"
+      trackNumber += 1
     }
 
     s +=
       "\nPlease set a backlink to keep the tracklist up-to-date: https://\(tracklist.shortLink)\n"
 
     return s
+  }
+
+  private func copyTracklistToClipboard() {
+    #if os(macOS)
+      let pasteboard = NSPasteboard.general
+      pasteboard.clearContents()
+      pasteboard.setString(displayTracklistText, forType: .string)
+    #else
+      UIPasteboard.general.string = displayTracklistText
+    #endif
+  }
+
+  @MainActor
+  private func saveTracklistToFile() {
+    #if os(macOS)
+      let panel = NSSavePanel()
+      if #available(macOS 12.0, *) {
+        panel.allowedContentTypes = [.plainText]
+      } else {
+        panel.allowedFileTypes = ["txt"]
+      }
+      panel.canCreateDirectories = true
+      panel.nameFieldStringValue = "\(sanitizedTracklistTitle()).txt"
+
+      panel.begin { [displayTracklistText] response in
+        guard response == .OK, let url = panel.url else {
+          return
+        }
+
+        do {
+          try displayTracklistText.write(to: url, atomically: true, encoding: .utf8)
+        } catch {
+          let alert = NSAlert()
+          alert.messageText = "Unable to Save Tracklist"
+          alert.informativeText = error.localizedDescription
+          alert.alertStyle = .warning
+          alert.runModal()
+        }
+      }
+    #else
+      copyTracklistToClipboard()
+    #endif
+  }
+
+  private func sanitizedTracklistTitle() -> String {
+    let invalidCharacters = CharacterSet(charactersIn: "/\\?%*|\"<>:")
+    let baseName = tracklist.title.isEmpty ? "Tracklist" : tracklist.title
+    let sanitized = baseName.components(separatedBy: invalidCharacters).joined(separator: " ")
+    let trimmed = sanitized.trimmingCharacters(in: .whitespacesAndNewlines)
+    return trimmed.isEmpty ? "Tracklist" : trimmed
   }
 }
