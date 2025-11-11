@@ -3,7 +3,7 @@ import SwiftUI
 struct TextTracklistView: View {
   @Binding var tracklist: Tracklist
   @Binding var estimateTrackTimes: Bool
-  let artworkSize = 400.0  // in pixels
+  let artworkSize = 200.0  // in pixels
 
   var body: some View {
     VStack(spacing: 0) {
