@@ -42,7 +42,7 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
           source: "",
         )
 
-        // Extract background image URL from div#bgArt
+        // Extract artwork
         let js = """
           (function() {
             var el = document.getElementById('artworkLeft');
@@ -53,8 +53,7 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
           """
         webView.evaluateJavaScript(js) { result, _ in
           if let urlString = result as? String, !urlString.isEmpty {
-            // UserDefaults.standard.set(urlString, forKey: "bgArtURLString")
-            tracklist.artworkURL = urlString
+            tracklist.artwork = NSImage(contentsOf: URL(string: urlString)!)
           }
 
           setTracklist(tracklist)
