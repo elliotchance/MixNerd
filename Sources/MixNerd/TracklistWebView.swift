@@ -105,7 +105,12 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
                   const parts = (
                       $(t).find("meta[itemprop=name]").attr("content") || $(t).find('span.trackValue').text()
                   ).split(" - ", 2);
-                  data.push({artist: parts[0].trim(), title: parts[1].trim(), time: trackStarts[trackNumber-1]});
+                  data.push({
+                    artist: parts[0].trim(),
+                    title: parts[1].trim(),
+                    time: trackStarts[trackNumber-1],
+                    label: $(t).find("span[title=label]").text().trim(),
+                  });
                   ++trackNumber;
               });
 
@@ -121,6 +126,7 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
                     time: String(describing: track["time"] ?? ""),
                     artist: String(describing: track["artist"] ?? ""),
                     title: String(describing: track["title"] ?? ""),
+                    label: String(describing: track["label"] ?? ""),
                   ))
               }
             }
