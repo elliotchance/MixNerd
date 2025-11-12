@@ -85,7 +85,10 @@ struct TracklistEditorWebView: View {
             )
           } else {
             AudioFileEditorView(
-              tracklist: Binding(
+              fileTracklist: Binding(
+                get: { state.fileTracklist ?? Tracklist() },
+                set: { state.setFileTracklist($0) }),
+              webTracklist: Binding(
                 get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }))
           }
         }
