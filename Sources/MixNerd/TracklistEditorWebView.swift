@@ -1,3 +1,4 @@
+import ID3TagEditor
 import SwiftUI
 import WebKit
 
@@ -29,13 +30,12 @@ struct TracklistEditorWebView: View {
       "https://www.1001tracklists.com/tracklist/2xbh9b9/armin-van-buuren-a-state-of-trance-000-2001-05-18.html"
   )!
   private let tracklistWebViewWidth = 400.0
-  private let pickerOptions: [String]
+  @State private var pickerOptions: [String]
   @State private var selectedPickerOption: String
 
   init() {
-    let options = ["Tracklist", "some file.mp3 + cue"]
-    pickerOptions = options
-    _selectedPickerOption = State(initialValue: options.last ?? "")
+    pickerOptions = ["Tracklist"]
+    _selectedPickerOption = State(initialValue: "Tracklist")
   }
 
   var body: some View {
@@ -57,7 +57,7 @@ struct TracklistEditorWebView: View {
         VStack(alignment: .leading, spacing: 0) {
           HStack {
             Button("Open...") {
-              // isOpeningFile = true
+              isOpeningFile = true
             }
             .controlSize(.small)
             .padding()
@@ -94,7 +94,84 @@ struct TracklistEditorWebView: View {
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .frame(width: tracklistWebViewWidth)
+        .fileImporter(
+          isPresented: $isOpeningFile,
+          allowedContentTypes: [.folder],
+          allowsMultipleSelection: false
+        ) { result in
+          switch result {
+          case .success(let urls):
+            guard let selectedURL = urls.first else { return }
+            do {
+              // Start accessing the security-scoped resource
+              guard selectedURL.startAccessingSecurityScopedResource() else {
+                throw NSError(
+                  domain: "FileAccessError", code: 0,
+                  userInfo: [NSLocalizedDescriptionKey: "Could not access the selected folder."])
+              }
+              defer {
+                selectedURL.stopAccessingSecurityScopedResource()
+              }
+
+              // Scan mp3 and cue files in the folder
+              let files = try FileManager.default.contentsOfDirectory(
+                at: selectedURL, includingPropertiesForKeys: nil)
+              var foundTracklist: Tracklist?
+
+              for file in files {
+                if file.pathExtension == "mp3" {
+                  let id3TagEditor = ID3TagEditor()
+                  if let id3Tag = try id3TagEditor.read(from: file.path) {
+                    let tagContentReader = ID3TagContentReader(id3Tag: id3Tag)
+
+                    // Extract artwork if available
+                    var artwork: NSImage? = nil
+                    if let pictureFrame = id3Tag.frames[.attachedPicture(.frontCover)]
+                      as? ID3FrameAttachedPicture
+                    {
+                      let pictureData = pictureFrame.picture
+                      artwork = NSImage(data: pictureData)
+                    }
+
+                    foundTracklist = Tracklist(
+                      artwork: artwork,
+                      artist: stringValue(tagContentReader.artist()),
+                      title: stringValue(tagContentReader.title()),
+                      // source: stringValue(tagContentReader.itunesGrouping()),
+                    )
+                  }
+                  pickerOptions.append(file.lastPathComponent)
+                }
+                if file.pathExtension == "cue" {
+                  let cueContent = try String(contentsOf: file, encoding: .utf8)
+                  if let cueFile = CueFile.parse(cueContent) {
+                    if foundTracklist != nil {
+                      foundTracklist?.tracks = cueFile.tracks
+                    } else {
+                      foundTracklist = cueFile
+                    }
+                  }
+                }
+              }
+
+              if let tracklist = foundTracklist {
+                state.setFileTracklist(tracklist)
+              }
+            } catch {
+              self.error = error
+            }
+          case .failure(let error):
+            self.error = error
+          }
+        }
       }
     }
+  }
+
+  func stringValue(_ s: String?) -> String {
+    if let s = s {
+      return s.replacingOccurrences(of: "\0", with: "")
+    }
+    return ""
   }
 }
