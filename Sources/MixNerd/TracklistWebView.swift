@@ -68,10 +68,35 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
           })();
           """
         webView.evaluateJavaScript(jsShortLink) { result, _ in
-          if let shortLink = result as? String, !shortLink.isEmpty {
+          if let shortLink = result as? String {
             tracklist.shortLink = shortLink
           }
+          setTracklist(tracklist)
+        }
 
+        // Extract the genre
+        let jsGenre = """
+          (function() {
+              return $("#tl_music_styles").text().trim();
+          })();
+          """
+        webView.evaluateJavaScript(jsGenre) { result, _ in
+          if let genre = result as? String {
+            tracklist.genre = genre
+          }
+          setTracklist(tracklist)
+        }
+
+        // Extract the source
+        let jsSource = """
+          (function() {
+              return $('h1 a[href^="/source/"]').text();
+          })();
+          """
+        webView.evaluateJavaScript(jsSource) { result, _ in
+          if let source = result as? String {
+            tracklist.source = source
+          }
           setTracklist(tracklist)
         }
 
