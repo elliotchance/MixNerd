@@ -23,6 +23,14 @@ struct ToggleTextField: View {
       }
       .buttonStyle(.borderless)
       .disabled(newValue == oldValue)
+      .help("Reset to: \(oldValue)")
+      .onHover { inside in
+        if inside {
+          NSCursor.pointingHand.push()
+        } else {
+          NSCursor.pop()
+        }
+      }
     }
   }
 }
