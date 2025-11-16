@@ -17,16 +17,6 @@ struct AudioFileEditorView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      //   HStack {
-      //     Button("Save") {
-      //     }
-      //     .controlSize(.small)
-      //     .disabled(fileName == nil)
-      //     .padding()
-      //   }
-      //   .frame(maxWidth: .infinity)
-      //   .frame(height: titleHeight)
-
       VStack(spacing: 0) {
         ArtworkView(artwork: Binding(get: { webTracklist.artwork }, set: { _ in }))
           .frame(width: 200, height: 200)
