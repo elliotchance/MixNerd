@@ -19,6 +19,18 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
     nsView.load(URLRequest(url: url))
   }
 
+  func searchForTracklist(name: String) {
+    // TODO: We might need to redirect to a search page first.
+    // let url = URL(string: "https://www.1001tracklists.com/")!
+
+    let js = """
+        function () { $('#sBoxInput').val('\(name)'); $('#sBoxBtn').click(); }();
+      """
+    nsView.evaluateJavaScript(js) { result, _ in
+      print("result: \(result)")
+    }
+  }
+
   class Coordinator: NSObject, WKNavigationDelegate {
     let setTracklist: @Sendable (Tracklist?) -> Void
 
