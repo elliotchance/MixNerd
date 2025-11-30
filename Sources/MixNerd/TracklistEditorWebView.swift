@@ -32,16 +32,25 @@ struct TracklistEditorWebView: View {
   private let tracklistWebViewWidth = 400.0
   @State private var pickerOptions: [String]
   @State private var selectedPickerOption: String
+  private var audioFileCollection: AudioFileCollection = AudioFileCollection()
 
   init() {
+    pickerOptions = ["Tracklist", "Settings"]
+    selectedPickerOption = "Tracklist"
+  }
+
+  func refreshPickerOptions() {
     pickerOptions = ["Tracklist"]
-    _selectedPickerOption = State(initialValue: "Tracklist")
+    for file in audioFileCollection.allAudioFiles() {
+      pickerOptions.append(file.audioFilePath.lastPathComponent)
+    }
+    pickerOptions.append("Settings")
   }
 
   var body: some View {
     GeometryReader { geometry in
       HStack(alignment: .top, spacing: 0) {
-        TracklistWebView(
+        let tracklistWebView = TracklistWebView(
           url: initialURL,
           setTracklist: { [state] tl in
             let tracklist = tl
@@ -53,6 +62,8 @@ struct TracklistEditorWebView: View {
         .frame(width: geometry.size.width - tracklistWebViewWidth, height: geometry.size.height)
         .border(Color.gray.opacity(0.3))
         .clipped()
+
+        tracklistWebView
 
         VStack(alignment: .leading, spacing: 0) {
           HStack {
@@ -67,11 +78,6 @@ struct TracklistEditorWebView: View {
                 Text(option).tag(option)
               }
             }
-
-            Button("Save") {
-            }
-            .controlSize(.small)
-            .disabled(true)
             .padding()
           }
           .frame(maxWidth: .infinity)
@@ -83,13 +89,19 @@ struct TracklistEditorWebView: View {
               estimateMissingTrackTimes: $estimateMissingTrackTimes,
               includeLabels: $includeLabels
             )
+          } else if selectedPickerOption == "Settings" {
+            SettingsView()
           } else {
             AudioFileEditorView(
               fileTracklist: Binding(
                 get: { state.fileTracklist ?? Tracklist() },
                 set: { state.setFileTracklist($0) }),
               webTracklist: Binding(
-                get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }))
+                get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
+              searchTracklist: { name in
+                // tracklistWebView.searchForTracklist(name: name)
+              }
+            )
           }
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
@@ -116,53 +128,60 @@ struct TracklistEditorWebView: View {
               // Scan mp3 and cue files in the folder
               let files = try FileManager.default.contentsOfDirectory(
                 at: selectedURL, includingPropertiesForKeys: nil)
-              var foundTracklist: Tracklist?
+              // var foundTracklist: Tracklist?
 
               for file in files {
                 if file.pathExtension == "mp3" {
-                  let id3TagEditor = ID3TagEditor()
-                  if let id3Tag = try id3TagEditor.read(from: file.path) {
-                    let tagContentReader = ID3TagContentReader(id3Tag: id3Tag)
+                  audioFileCollection.addAudioFile(audioFilePath: file)
+                  // print("Processing \(file.pathExtension) file: \(file)")
+                  // let id3TagEditor = ID3TagEditor()
+                  // if let id3Tag = try id3TagEditor.read(from: file.path) {
+                  //   let tagContentReader = ID3TagContentReader(id3Tag: id3Tag)
+                  //   print("Tag content reader: \(tagContentReader)")
+                  //   print("Artist: \(tagContentReader.artist())")
+                  //   print("Title: \(tagContentReader.title())")
 
-                    // Extract artwork if available
-                    var artwork: NSImage? = nil
-                    if let pictureFrame = id3Tag.frames[.attachedPicture(.frontCover)]
-                      as? ID3FrameAttachedPicture
-                    {
-                      let pictureData = pictureFrame.picture
-                      artwork = NSImage(data: pictureData)
-                    }
+                  //     // Extract artwork if available
+                  //     var artwork: NSImage? = nil
+                  //     if let pictureFrame = id3Tag.frames[.attachedPicture(.frontCover)]
+                  //       as? ID3FrameAttachedPicture
+                  //     {
+                  //       let pictureData = pictureFrame.picture
+                  //       artwork = NSImage(data: pictureData)
+                  //     }
 
-                    foundTracklist = Tracklist(
-                      artwork: artwork,
-                      artist: stringValue(tagContentReader.artist()),
-                      title: stringValue(tagContentReader.title()),
-                      // source: stringValue(tagContentReader.itunesGrouping()),
-                    )
-                  }
-                  pickerOptions.append(file.lastPathComponent)
+                  //     foundTracklist = Tracklist(
+                  //       artwork: artwork,
+                  //       artist: stringValue(tagContentReader.artist()),
+                  //       title: stringValue(tagContentReader.title()),
+                  //       // source: stringValue(tagContentReader.itunesGrouping()),
+                  //     )
+                  // }
+                  // pickerOptions.append(file.lastPathComponent)
                 }
-                if file.pathExtension == "cue" {
-                  let cueContent = try String(contentsOf: file, encoding: .utf8)
-                  if let cueFile = CueFile.parse(cueContent) {
-                    if foundTracklist != nil {
-                      foundTracklist?.tracks = cueFile.tracks
-                    } else {
-                      foundTracklist = cueFile
-                    }
-                  }
-                }
+                // if file.pathExtension == "cue" {
+                //   let cueContent = try String(contentsOf: file, encoding: .utf8)
+                //   if let cueFile = CueFile.parse(cueContent) {
+                //     if foundTracklist != nil {
+                //       foundTracklist?.tracks = cueFile.tracks
+                //     } else {
+                //       foundTracklist = cueFile
+                //     }
+                //   }
+                // }
               }
 
-              if let tracklist = foundTracklist {
-                state.setFileTracklist(tracklist)
-              }
+              // if let tracklist = foundTracklist {
+              //   state.setFileTracklist(tracklist)
+              // }
             } catch {
               self.error = error
             }
           case .failure(let error):
             self.error = error
           }
+
+          refreshPickerOptions()
         }
       }
     }

@@ -9,15 +9,27 @@ struct AudioFileEditorView: View {
   @Binding var fileTracklist: Tracklist
   @Binding var webTracklist: Tracklist
   let titleHeight = 30.0
+  let searchTracklist: (String) -> Void
 
-  init(fileTracklist: Binding<Tracklist>, webTracklist: Binding<Tracklist>) {
+  init(
+    fileTracklist: Binding<Tracklist>, webTracklist: Binding<Tracklist>,
+    searchTracklist: @escaping (String) -> Void
+  ) {
     _fileTracklist = fileTracklist
     _webTracklist = webTracklist
+    self.searchTracklist = searchTracklist
   }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       VStack(spacing: 0) {
+        Button("Search") {
+          searchTracklist("some tracklist")
+        }
+        // .buttonStyle(.bordered)
+        // .controlSize(.small)
+        .padding(.bottom)
+
         ArtworkView(artwork: Binding(get: { webTracklist.artwork }, set: { _ in }))
           .frame(width: 200, height: 200)
 
