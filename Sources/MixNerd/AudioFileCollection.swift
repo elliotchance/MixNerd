@@ -8,10 +8,16 @@ class AudioFileCollection {
   }
 
   func addAudioFile(audioFilePath: URL) {
-    audioFiles[audioFilePath] = AudioFile(audioFilePath: audioFilePath)
+    audioFiles[audioFilePath] = AudioFile(fromFilePath: audioFilePath)
+  }
+
+  func audioFileByName(name: String) -> AudioFile? {
+    return audioFiles.values.first { $0.audioFilePath.lastPathComponent == name }
   }
 
   func allAudioFiles() -> [AudioFile] {
-    return Array(audioFiles.values)
+    return Array(audioFiles.values).sorted {
+      $0.audioFilePath.lastPathComponent < $1.audioFilePath.lastPathComponent
+    }
   }
 }

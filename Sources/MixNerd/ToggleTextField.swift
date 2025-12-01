@@ -1,5 +1,4 @@
 import AppKit
-import ID3TagEditor
 import SwiftUI
 import WebKit
 
