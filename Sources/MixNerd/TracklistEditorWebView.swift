@@ -25,18 +25,19 @@ struct TracklistEditorWebView: View {
   @AppStorage("TextTracklistView_estimateMissingTrackTimes") private var estimateMissingTrackTimes:
     Bool = false
   @AppStorage("TextTracklistView_includeLabels") private var includeLabels: Bool = true
-  private let initialURL = URL(
-    string:
-      "https://www.1001tracklists.com/tracklist/2xbh9b9/armin-van-buuren-a-state-of-trance-000-2001-05-18.html"
-  )!
+  private let initialURL = URL(string: "https://www.1001tracklists.com/")!
   private let tracklistWebViewWidth = 400.0
   @State private var pickerOptions: [String]
   @State private var selectedPickerOption: String
   private var audioFileCollection: AudioFileCollection = AudioFileCollection()
+  @State private var tracklistWebView: TracklistWebView
 
   init() {
     pickerOptions = ["Tracklist", "Settings"]
     selectedPickerOption = "Tracklist"
+    tracklistWebView = TracklistWebView(
+      url: initialURL,
+    )
   }
 
   func refreshPickerOptions() {
@@ -50,20 +51,10 @@ struct TracklistEditorWebView: View {
   var body: some View {
     GeometryReader { geometry in
       HStack(alignment: .top, spacing: 0) {
-        let tracklistWebView = TracklistWebView(
-          url: initialURL,
-          setTracklist: { [state] tl in
-            let tracklist = tl
-            Task { @MainActor in
-              state.setWebTracklist(tracklist)
-            }
-          }
-        )
-        .frame(width: geometry.size.width - tracklistWebViewWidth, height: geometry.size.height)
-        .border(Color.gray.opacity(0.3))
-        .clipped()
-
         tracklistWebView
+          .frame(width: geometry.size.width - tracklistWebViewWidth, height: geometry.size.height)
+          .border(Color.gray.opacity(0.3))
+          .clipped()
 
         VStack(alignment: .leading, spacing: 0) {
           HStack {
@@ -94,12 +85,15 @@ struct TracklistEditorWebView: View {
           } else {
             AudioFileEditorView(
               fileTracklist: Binding(
-                get: { state.fileTracklist ?? Tracklist() },
+                get: {
+                  audioFileCollection.audioFileByName(name: selectedPickerOption)?.tracklist
+                    ?? Tracklist()
+                },
                 set: { state.setFileTracklist($0) }),
               webTracklist: Binding(
                 get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
-              searchTracklist: { name in
-                // tracklistWebView.searchForTracklist(name: name)
+              searchForTracklist: { name in
+                tracklistWebView.searchForTracklist(name: name)
               }
             )
           }
@@ -133,31 +127,6 @@ struct TracklistEditorWebView: View {
               for file in files {
                 if file.pathExtension == "mp3" {
                   audioFileCollection.addAudioFile(audioFilePath: file)
-                  // print("Processing \(file.pathExtension) file: \(file)")
-                  // let id3TagEditor = ID3TagEditor()
-                  // if let id3Tag = try id3TagEditor.read(from: file.path) {
-                  //   let tagContentReader = ID3TagContentReader(id3Tag: id3Tag)
-                  //   print("Tag content reader: \(tagContentReader)")
-                  //   print("Artist: \(tagContentReader.artist())")
-                  //   print("Title: \(tagContentReader.title())")
-
-                  //     // Extract artwork if available
-                  //     var artwork: NSImage? = nil
-                  //     if let pictureFrame = id3Tag.frames[.attachedPicture(.frontCover)]
-                  //       as? ID3FrameAttachedPicture
-                  //     {
-                  //       let pictureData = pictureFrame.picture
-                  //       artwork = NSImage(data: pictureData)
-                  //     }
-
-                  //     foundTracklist = Tracklist(
-                  //       artwork: artwork,
-                  //       artist: stringValue(tagContentReader.artist()),
-                  //       title: stringValue(tagContentReader.title()),
-                  //       // source: stringValue(tagContentReader.itunesGrouping()),
-                  //     )
-                  // }
-                  // pickerOptions.append(file.lastPathComponent)
                 }
                 // if file.pathExtension == "cue" {
                 //   let cueContent = try String(contentsOf: file, encoding: .utf8)
@@ -185,12 +154,5 @@ struct TracklistEditorWebView: View {
         }
       }
     }
-  }
-
-  func stringValue(_ s: String?) -> String {
-    if let s = s {
-      return s.replacingOccurrences(of: "\0", with: "")
-    }
-    return ""
   }
 }

@@ -3,42 +3,72 @@ import WebKit
 
 struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
   let url: URL
-  let setTracklist: @Sendable (Tracklist?) -> Void
+  let setTracklist: @Sendable (Tracklist?) -> Void = { _ in }
+  // var onSearchAvailable: ((@escaping (String) -> Void) -> Void)?
+
+  // Store coordinator reference to access from instance methods
+  private class CoordinatorReference {
+    weak var coordinator: Coordinator?
+  }
+  private let coordinatorRef = CoordinatorReference()
 
   func makeCoordinator() -> Coordinator {
-    Coordinator(setTracklist: setTracklist)
+    let coordinator = Coordinator(setTracklist: setTracklist)
+    coordinatorRef.coordinator = coordinator
+    // Provide the search function to the parent if needed
+    // if let onSearchAvailable = onSearchAvailable {
+    //   onSearchAvailable { [weak coordinator] name in
+    //     coordinator?.searchForTracklist(name: name)
+    //   }
+    // }
+    return coordinator
   }
 
   func makeNSView(context: Context) -> WKWebView {
     let webView = WKWebView()
+
+    // This is importsnt to make sure challange requests do not happen on every page load.
+    webView.configuration.websiteDataStore = .default()  // ensure persistent cookies
+
     webView.navigationDelegate = context.coordinator
+    context.coordinator.webView = webView
+    coordinatorRef.coordinator = context.coordinator
     return webView
   }
 
   func updateNSView(_ nsView: WKWebView, context: Context) {
+    context.coordinator.webView = nsView
+    coordinatorRef.coordinator = context.coordinator
     nsView.load(URLRequest(url: url))
   }
 
+  @MainActor
   func searchForTracklist(name: String) {
-    // TODO: We might need to redirect to a search page first.
-    // let url = URL(string: "https://www.1001tracklists.com/")!
-
-    let js = """
-        function () { $('#sBoxInput').val('\(name)'); $('#sBoxBtn').click(); }();
-      """
-    nsView.evaluateJavaScript(js) { result, _ in
-      print("result: \(result)")
-    }
+    coordinatorRef.coordinator?.searchForTracklist(name: name)
   }
 
   class Coordinator: NSObject, WKNavigationDelegate {
     let setTracklist: @Sendable (Tracklist?) -> Void
+    weak var webView: WKWebView?
 
     init(setTracklist: @escaping @Sendable (Tracklist?) -> Void) {
       self.setTracklist = setTracklist
     }
 
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    @MainActor
+    func searchForTracklist(name: String) {
+      // TODO: We might need to redirect to a search page first.
+      // let url = URL(string: "https://www.1001tracklists.com/")!
+
+      guard let webView = webView else { return }
+      let js = """
+          $('#sBoxInput').val('\(name)');
+          $('#sBoxBtn').click();
+        """
+      webView.evaluateJavaScript(js)
+    }
+
+    func attemptToExtractTracklist(webView: WKWebView) {
       DispatchQueue.main.async(execute: { [setTracklist = self.setTracklist] in
         let currentURL = webView.url?.absoluteString ?? ""
         if !currentURL.hasPrefix("https://www.1001tracklists.com/tracklist/") {
@@ -173,5 +203,14 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
         }
       })
     }
+
+    // func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    // webView.find("Please wait, you will be forwarded") { result in
+    //   print("result: \(result.matchFound)")
+    //   if !result.matchFound {
+    //     self.attemptToExtractTracklist(webView: webView)
+    //   }
+    // }
+    // }
   }
 }
