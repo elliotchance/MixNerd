@@ -30,13 +30,23 @@ struct TracklistEditorWebView: View {
   @State private var pickerOptions: [String]
   @State private var selectedPickerOption: String
   private var audioFileCollection: AudioFileCollection = AudioFileCollection()
-  @State private var tracklistWebView: TracklistWebView
+  @State private var tracklistWebView: TracklistWebView?
 
   init() {
     pickerOptions = ["Tracklist", "Settings"]
     selectedPickerOption = "Tracklist"
-    tracklistWebView = TracklistWebView(
+  }
+
+  @MainActor
+  private func makeTracklistWebView() -> TracklistWebView {
+    let stateRef = state
+    return TracklistWebView(
       url: initialURL,
+      setTracklist: { tracklist in
+        Task { @MainActor in
+          stateRef.setWebTracklist(tracklist)
+        }
+      }
     )
   }
 
@@ -51,10 +61,12 @@ struct TracklistEditorWebView: View {
   var body: some View {
     GeometryReader { geometry in
       HStack(alignment: .top, spacing: 0) {
-        tracklistWebView
-          .frame(width: geometry.size.width - tracklistWebViewWidth, height: geometry.size.height)
-          .border(Color.gray.opacity(0.3))
-          .clipped()
+        if let tracklistWebView = tracklistWebView {
+          tracklistWebView
+            .frame(width: geometry.size.width - tracklistWebViewWidth, height: geometry.size.height)
+            .border(Color.gray.opacity(0.3))
+            .clipped()
+        }
 
         VStack(alignment: .leading, spacing: 0) {
           HStack {
@@ -93,7 +105,13 @@ struct TracklistEditorWebView: View {
               webTracklist: Binding(
                 get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
               searchForTracklist: { name in
-                tracklistWebView.searchForTracklist(name: name)
+                tracklistWebView?.searchForTracklist(name: name)
+              },
+              save: {
+                if let audioFile = audioFileCollection.audioFileByName(name: selectedPickerOption) {
+                  audioFile.tracklist = state.webTracklist
+                  audioFile.save()
+                }
               }
             )
           }
@@ -151,6 +169,11 @@ struct TracklistEditorWebView: View {
           }
 
           refreshPickerOptions()
+        }
+      }
+      .onAppear {
+        if tracklistWebView == nil {
+          tracklistWebView = makeTracklistWebView()
         }
       }
     }

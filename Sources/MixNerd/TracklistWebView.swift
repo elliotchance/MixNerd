@@ -3,7 +3,7 @@ import WebKit
 
 struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
   let url: URL
-  let setTracklist: @Sendable (Tracklist?) -> Void = { _ in }
+  let setTracklist: @Sendable (Tracklist?) -> Void
   // var onSearchAvailable: ((@escaping (String) -> Void) -> Void)?
 
   // Store coordinator reference to access from instance methods
@@ -111,7 +111,7 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
           """
         webView.evaluateJavaScript(jsShortLink) { result, _ in
           if let shortLink = result as? String {
-            tracklist.shortLink = shortLink
+            tracklist.shortLink = "https://\(shortLink)"
           }
           setTracklist(tracklist)
         }
@@ -204,13 +204,14 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
       })
     }
 
-    // func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-    // webView.find("Please wait, you will be forwarded") { result in
-    //   print("result: \(result.matchFound)")
-    //   if !result.matchFound {
-    //     self.attemptToExtractTracklist(webView: webView)
-    //   }
-    // }
-    // }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+      let parent = self
+      // webView.find("Please wait, you will be forwarded") { result in
+      //   print("result: \(result.matchFound)")
+      //   if !result.matchFound {
+      parent.attemptToExtractTracklist(webView: webView)
+      //   }
+      // }
+    }
   }
 }
