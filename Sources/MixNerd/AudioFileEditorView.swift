@@ -10,25 +10,28 @@ struct AudioFileEditorView: View {
   @Binding var webTracklist: Tracklist
   let titleHeight = 30.0
   let searchForTracklist: (String) -> Void
+  let save: () -> Void
 
   init(
     fileTracklist: Binding<Tracklist>, webTracklist: Binding<Tracklist>,
-    searchForTracklist: @escaping (String) -> Void
+    searchForTracklist: @escaping (String) -> Void,
+    save: @escaping () -> Void,
   ) {
     _fileTracklist = fileTracklist
     _webTracklist = webTracklist
     self.searchForTracklist = searchForTracklist
+    self.save = save
   }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       VStack(spacing: 0) {
         HStack {
-          Button("Search") {
-            searchForTracklist("some tracklist")
+          Button("Search 1001tracklists") {
+            searchForTracklist("\(fileTracklist.artist) \(fileTracklist.title)")
           }
-          Button("Load Tracklist") {
-            // loadTracklist("some tracklist")
+          Button("Save") {
+            save()
           }
         }
         .padding(.bottom)

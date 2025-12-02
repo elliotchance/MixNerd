@@ -135,7 +135,7 @@ Please set a backlink to keep the tracklist up-to-date: https://1001.tl/2xbh9b9
     }
 
     s +=
-      "\nPlease set a backlink to keep the tracklist up-to-date: https://\(tracklist.shortLink)\n"
+      "\nPlease set a backlink to keep the tracklist up-to-date: \(tracklist.shortLink)\n"
 
     return s
   }
