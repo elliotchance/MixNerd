@@ -1,8 +1,7 @@
 import AppKit
 
 struct Tracklist: @unchecked Sendable {
-  var artwork: NSImage? = nil
-
+  var artwork: Artwork = Artwork()
   var date: String = ""
   var artist: String = ""
   var title: String = ""

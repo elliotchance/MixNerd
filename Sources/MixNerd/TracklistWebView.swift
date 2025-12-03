@@ -95,7 +95,7 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
           """
         webView.evaluateJavaScript(js) { result, _ in
           if let urlString = result as? String, !urlString.isEmpty {
-            tracklist.artwork = NSImage(contentsOf: URL(string: urlString)!)
+            tracklist.artwork = Artwork(fromURL: URL(string: urlString)!)
           }
 
           setTracklist(tracklist)
