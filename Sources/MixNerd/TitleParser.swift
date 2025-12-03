@@ -15,10 +15,10 @@ public class TitleParser {
     return ""
   }
 
-  public func parseDate(_ title: String) -> String {
+  public func parseDate(_ title: String) -> Date {
     if let match = try? pattern.firstMatch(in: title) {
-      return String(match.3)
+      return Date(fromString: String(match.3))
     }
-    return ""
+    return Date()
   }
 }

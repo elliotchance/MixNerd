@@ -2,7 +2,7 @@ import AppKit
 
 struct Tracklist: @unchecked Sendable {
   var artwork: Artwork = Artwork()
-  var date: String = ""
+  var date: Date = Date()
   var artist: String = ""
   var title: String = ""
   var source: String = ""

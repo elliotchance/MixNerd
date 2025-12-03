@@ -21,7 +21,7 @@ class AudioFile {
 
       tracklist = Tracklist(
         artwork: Artwork(fromID3Tag: id3Tag),
-        date: AudioFile.stringValue(tagContentReader.recordingYear()?.description),
+        date: Date(fromID3TagContentReader: tagContentReader),
         artist: AudioFile.stringValue(tagContentReader.artist()),
         title: AudioFile.stringValue(tagContentReader.title()),
         source: AudioFile.stringValue(tagContentReader.iTunesGrouping() ?? ""),
