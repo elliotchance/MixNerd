@@ -62,8 +62,12 @@ struct AudioFileEditorView: View {
           )
           ToggleTextField(
             label: "Date",
-            oldValue: Binding(get: { fileTracklist.date }, set: { fileTracklist.date = $0 }),
-            newValue: Binding(get: { webTracklist.date }, set: { webTracklist.date = $0 }),
+            oldValue: Binding(
+              get: { fileTracklist.date.description },
+              set: { fileTracklist.date = Date(fromString: $0) }),
+            newValue: Binding(
+              get: { webTracklist.date.description },
+              set: { webTracklist.date = Date(fromString: $0) }),
           )
           ToggleTextField(
             label: "Comment",
