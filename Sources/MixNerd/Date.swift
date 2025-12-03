@@ -50,6 +50,12 @@ public class Date: CustomStringConvertible {
     self.init(year: date?.year ?? 0, month: date?.month ?? 0, day: date?.day ?? 0)
   }
 
+  func toID3FrameRecordingDateTime() -> ID3FrameRecordingDateTime {
+    return ID3FrameRecordingDateTime(
+      recordingDateTime: RecordingDateTime(
+        date: RecordingDate(day: day, month: month, year: year), time: nil))
+  }
+
   public var description: String {
     if year == 0 {
       return ""
