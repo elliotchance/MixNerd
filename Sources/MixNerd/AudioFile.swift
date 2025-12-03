@@ -55,11 +55,23 @@ class AudioFile {
       // most sensible, but maybe we should set both?
       .iTunesGrouping(frame: ID3FrameWithStringContent(content: tracklist?.source ?? ""))
 
-    // .recordingDayMonth(frame: ID3FrameRecordingDayMonth(day: 5, month: 8))
-    // .recordingYear(frame: ID3FrameWithIntegerContent(year: Int(tracklist?.date ?? "")))
+      // ID3v2.4 supports multiple comment frames with different languages.
+      // I don't think the language is imporant, so we'll just choose eng for now.
+      // Important: The contentDescription needs to be empty for other applications
+      // to read content as a comment.
+      .comment(
+        language: .eng,
+        frame: ID3FrameWithLocalizedContent(
+          language: .eng,
+          contentDescription: "",
+          content: tracklist?.shortLink ?? ""
+        ))
 
-    // .comment(language: .ita, frame: ID3FrameWithLocalizedContent(language: ID3FrameContentLanguage.ita, contentDescription: "CD", content: "v2 ita comment"))
-    // .comment(language: .eng, frame: ID3FrameWithLocalizedContent(language: ID3FrameContentLanguage.eng, contentDescription: "CD", content: "v2 eng comment"))
+    if let date = tracklist?.date {
+      _ = id3Tag.recordingDateTime(
+        frame: date.toID3FrameRecordingDateTime()
+      )
+    }
 
     if let artwork = tracklist?.artwork {
       _ = id3Tag.attachedPicture(
