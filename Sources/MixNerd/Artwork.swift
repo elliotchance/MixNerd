@@ -37,4 +37,10 @@ struct Artwork {
       type: .frontCover,
       format: .jpeg)
   }
+
+  func write(toFile path: String) {
+    let fileURL = URL(fileURLWithPath: path)
+    let data = jpegData()
+    try? data.write(to: fileURL)
+  }
 }

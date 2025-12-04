@@ -33,12 +33,12 @@ struct AudioFileEditorView: View {
           Button("Save") {
             save()
           }
-          .disabled(webTracklist.shortLink.isEmpty)
+          .disabled(webTracklist.shortLink == nil)
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.bottom)
 
-        if !webTracklist.shortLink.isEmpty {
+        if webTracklist.shortLink != nil {
           ArtworkView(artwork: Binding(get: { webTracklist.artwork }, set: { _ in }))
             .frame(width: 200, height: 200)
 
@@ -75,9 +75,11 @@ struct AudioFileEditorView: View {
             ToggleTextField(
               label: "Comment",
               oldValue: Binding(
-                get: { fileTracklist.shortLink }, set: { fileTracklist.shortLink = $0 }),
+                get: { fileTracklist.shortLink?.absoluteString ?? "" },
+                set: { fileTracklist.shortLink = URL(string: $0) }),
               newValue: Binding(
-                get: { webTracklist.shortLink }, set: { webTracklist.shortLink = $0 }),
+                get: { webTracklist.shortLink?.absoluteString ?? "" },
+                set: { webTracklist.shortLink = URL(string: $0) }),
             )
           }
           .padding()
