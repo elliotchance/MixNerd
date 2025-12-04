@@ -1,7 +1,7 @@
 import Foundation
 
-class URLFile {
-  static func write(url: URL, to file: URL) {
+extension URL {
+  func writeInternetShortcut(to file: URL) {
     // Write a standard Internet Shortcut (.url) file which is understood by both
     // Windows and macOS Finder.
     //
@@ -10,7 +10,7 @@ class URLFile {
     // URL=https://example.com/
     let content = """
       [InternetShortcut]
-      URL=\(url.absoluteString)
+      URL=\(absoluteString)
       """
 
     try? content.write(to: file, atomically: true, encoding: .utf8)

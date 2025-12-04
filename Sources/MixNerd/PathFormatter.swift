@@ -50,12 +50,20 @@ class PathFormatter {
     return String(tracklist.date.year)
   }
 
+  func dateComponent(tracklist: Tracklist) -> String {
+    return tracklist.date.description
+  }
+
   func artistComponent(tracklist: Tracklist) -> String {
     return tracklist.artist
   }
 
   func titleComponent(tracklist: Tracklist) -> String {
     return tracklist.title
+  }
+
+  func sourceComponent(tracklist: Tracklist) -> String {
+    return tracklist.source
   }
 
   /// Escapes a component for use in a path.
@@ -72,6 +80,10 @@ class PathFormatter {
     switch named {
     case "artist":
       return artistComponent(tracklist: tracklist)
+    case "date":
+      return dateComponent(tracklist: tracklist)
+    case "source":
+      return sourceComponent(tracklist: tracklist)
     case "title":
       return titleComponent(tracklist: tracklist)
     case "year":

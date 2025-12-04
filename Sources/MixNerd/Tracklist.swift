@@ -10,7 +10,7 @@ struct Tracklist: @unchecked Sendable {
   var tracks: [Track] = []
 
   // e.g. https://1001.tl/1u7zqrvk
-  var shortLink: String = ""
+  var shortLink: URL?
 
   var duration: TimeInterval = 2 * 3600  // 2 hours
 

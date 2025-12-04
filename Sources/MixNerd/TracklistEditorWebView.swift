@@ -31,6 +31,7 @@ struct TracklistEditorWebView: View {
   @State private var selectedPickerOption: String
   private var audioFileCollection: AudioFileCollection = AudioFileCollection()
   @State private var tracklistWebView: TracklistWebView?
+  @State private var destinationFolder: URL?
 
   init() {
     pickerOptions = ["Tracklist", "Settings"]
@@ -108,9 +109,44 @@ struct TracklistEditorWebView: View {
                 tracklistWebView?.searchForTracklist(name: name)
               },
               save: {
-                if let audioFile = audioFileCollection.audioFileByName(name: selectedPickerOption) {
-                  audioFile.tracklist = state.webTracklist
-                  audioFile.save()
+                if let audioFile = audioFileCollection.audioFileByName(name: selectedPickerOption),
+                  let destinationFolder = destinationFolder
+                {
+                  if let tracklist = state.webTracklist {
+                    // Save the file in place first.
+                    audioFile.tracklist = tracklist
+                    audioFile.save()
+
+                    // Now move and write other files.
+                    do {
+                      let fileDestination = destinationFolder.appendingPathComponent(
+                        PathFormatter().format(
+                          path: "{source}/{year}/{date} {title}/{date} {title}",
+                          tracklist: tracklist))
+                      let folderDestination = fileDestination.deletingLastPathComponent()
+
+                      try FileManager.default.createDirectory(
+                        at: folderDestination, withIntermediateDirectories: true, attributes: nil)
+
+                      let audioFilePath = fileDestination.appendingPathExtension("mp3")
+                      try FileManager.default.moveItem(
+                        at: audioFile.audioFilePath, to: audioFilePath)
+                      audioFile.audioFilePath = audioFilePath
+
+                      let coverPath = folderDestination.appendingPathComponent("cover.jpg")
+                      tracklist.artwork.write(toFile: coverPath.path)
+
+                      audioFile.writeCUEFile()
+
+                      if let shortLink = tracklist.shortLink {
+                        tracklist.shortLink?.writeInternetShortcut(
+                          to: folderDestination.appendingPathComponent(
+                            "\(shortLink.lastPathComponent).url"))
+                      }
+                    } catch {
+                      print("Error saving files: \(error)")
+                    }
+                  }
                 }
               }
             )
@@ -125,42 +161,27 @@ struct TracklistEditorWebView: View {
         ) { result in
           switch result {
           case .success(let urls):
-            guard let selectedURL = urls.first else { return }
+            guard let selectedFolder = urls.first else { return }
+            destinationFolder = selectedFolder
             do {
               // Start accessing the security-scoped resource
-              guard selectedURL.startAccessingSecurityScopedResource() else {
+              guard selectedFolder.startAccessingSecurityScopedResource() else {
                 throw NSError(
                   domain: "FileAccessError", code: 0,
                   userInfo: [NSLocalizedDescriptionKey: "Could not access the selected folder."])
               }
               defer {
-                selectedURL.stopAccessingSecurityScopedResource()
+                selectedFolder.stopAccessingSecurityScopedResource()
               }
 
-              // Scan mp3 and cue files in the folder
               let files = try FileManager.default.contentsOfDirectory(
-                at: selectedURL, includingPropertiesForKeys: nil)
-              // var foundTracklist: Tracklist?
+                at: selectedFolder, includingPropertiesForKeys: nil)
 
               for file in files {
                 if file.pathExtension == "mp3" {
                   audioFileCollection.addAudioFile(audioFilePath: file)
                 }
-                // if file.pathExtension == "cue" {
-                //   let cueContent = try String(contentsOf: file, encoding: .utf8)
-                //   if let cueFile = CueFile.parse(cueContent) {
-                //     if foundTracklist != nil {
-                //       foundTracklist?.tracks = cueFile.tracks
-                //     } else {
-                //       foundTracklist = cueFile
-                //     }
-                //   }
-                // }
               }
-
-              // if let tracklist = foundTracklist {
-              //   state.setFileTracklist(tracklist)
-              // }
             } catch {
               self.error = error
             }

@@ -111,7 +111,7 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
           """
         webView.evaluateJavaScript(jsShortLink) { result, _ in
           if let shortLink = result as? String {
-            tracklist.shortLink = "https://\(shortLink)"
+            tracklist.shortLink = URL(string: "https://\(shortLink)")
           }
           setTracklist(tracklist)
         }
