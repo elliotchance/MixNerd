@@ -14,4 +14,4 @@ Now press **Save** and the mix is tagged and moved. This is configurable, but I 
 
 The `.cue` file works with many players - including the awesome - [VOX](https://vox.rocks/mac-music-player):
 
-![alt text](https://github.com/elliotchance/MixNerd/blob/main/Resources/screenshots/vox.png?raw=true)
+<img src="https://github.com/elliotchance/MixNerd/blob/main/Resources/screenshots/vox.png?raw=true" width="200" />
