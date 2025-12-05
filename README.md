@@ -1,4 +1,8 @@
-# <img src="https://github.com/elliotchance/MixNerd/blob/main/Resources/AppIcon.iconset/icon_256x256.png?raw=true" width="50" style="vertical-align: middle;" /> MixNerd
+# MixNerd
+
+<p align="center">
+    <img src="https://github.com/elliotchance/MixNerd/blob/main/Resources/AppIcon.iconset/icon_256x256.png?raw=true" width="256" height="256" />
+</p>
 
 MixNerd is perfect for tagging and organizing your downloaded mp3 files. It can:
 
