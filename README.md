@@ -8,10 +8,14 @@ MixNerd is perfect for tagging and organizing your downloaded mp3 files. It can:
 
 ![alt text](https://github.com/elliotchance/MixNerd/blob/main/Resources/screenshots/asot_1253.png?raw=true)
 
-Now press **Save** and the mix is tagged and moved. This is configurable, but I choose to organize as `{source}/{year}/{date} {title}/{date} {title}`:
+Now press **Save** and the mix is tagged and moved.
+
+This is configurable, but I choose to organize as `{source}/{year}/{date} {title}/{date} {title}`:
 
 ![alt text](https://github.com/elliotchance/MixNerd/blob/main/Resources/screenshots/folder.png?raw=true)
 
 The `.cue` file works with many players - including the awesome - [VOX](https://vox.rocks/mac-music-player):
 
-<img src="https://github.com/elliotchance/MixNerd/blob/main/Resources/screenshots/vox.png?raw=true" width="200" />
+<p align="center">
+    <img src="https://github.com/elliotchance/MixNerd/blob/main/Resources/screenshots/vox.png?raw=true" width="400" />
+</p>
