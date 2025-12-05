@@ -94,8 +94,8 @@ class AudioFile {
     return ""
   }
 
-  func cueFileContent() -> String {
-    let cueFile = CueFile(
+  func cueFile() -> CueFile {
+    return CueFile(
       performer: tracklist?.artist ?? "",
       title: "\(tracklist?.date.description ?? "") \(tracklist?.title ?? "")",
       file: audioFilePath.lastPathComponent,
@@ -103,12 +103,11 @@ class AudioFile {
         CueTrack(performer: $0.artist, title: $0.title, time: .seconds($0.timeSeconds()))
       } ?? [],
     )
-    return cueFile.content()
   }
 
   func writeCUEFile() {
     cueFilePath = audioFilePath.deletingPathExtension().appendingPathExtension("cue")
-    let content = cueFileContent()
+    let content = cueFile().content()
     try? content.write(to: cueFilePath!, atomically: true, encoding: .utf8)
   }
 }
