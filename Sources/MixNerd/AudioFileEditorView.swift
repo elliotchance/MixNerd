@@ -16,6 +16,9 @@ struct AudioFileEditorView: View {
   @AppStorage(Settings.RenameFilesKey) private var renameFiles: Bool = Settings.RenameFilesDefault
   @AppStorage(Settings.RenameFileFormatKey) private var renameFileFormat: String = Settings
     .RenameFileFormatDefault
+  @AppStorage(Settings.WriteCueFileKey) private var writeCueFile: Bool = Settings
+    .WriteCueFileDefault
+
   init(
     fileTracklist: Binding<Tracklist>, webTracklist: Binding<Tracklist>,
     searchForTracklist: @escaping (String) -> Void,
@@ -108,58 +111,62 @@ struct AudioFileEditorView: View {
           }
           .padding()
 
-          let estimatedCount = webTracklist.tracks.filter { $0.time.isEstimated }.count
-          let totalCount = webTracklist.tracks.count
-          if estimatedCount > 1 {
-            Text("\(estimatedCount)/\(totalCount) tracks have estimated times")
-              .bold()
-              .foregroundColor(.orange)
-              .padding(.bottom, 5)
-          } else {
-            Text("\(totalCount)/\(totalCount) have track times")
-              .foregroundColor(.green)
-              .padding(.bottom, 5)
-          }
+          if writeCueFile {
+            let estimatedCount = webTracklist.tracks.filter { $0.time.isEstimated }.count
+            let totalCount = webTracklist.tracks.count
+            if estimatedCount > 1 {
+              Text("\(estimatedCount)/\(totalCount) tracks have estimated times")
+                .bold()
+                .foregroundColor(.orange)
+                .padding(.bottom, 5)
+            } else {
+              Text("\(totalCount)/\(totalCount) have track times")
+                .foregroundColor(.green)
+                .padding(.bottom, 5)
+            }
 
-          ScrollView {
-            Form {
-              ForEach(Array(webTracklist.tracks.enumerated()), id: \.element.id) { index, track in
-                HStack(alignment: .top) {
-                  VStack {
-                    Text(String(format: "%02d", index + 1)).font(.title3).bold()
+            ScrollView {
+              Form {
+                ForEach(Array(webTracklist.tracks.enumerated()), id: \.element.id) { index, track in
+                  HStack(alignment: .top) {
+                    VStack {
+                      Text(String(format: "%02d", index + 1)).font(.title3).bold()
 
-                    TextField(
-                      "",
-                      text: Binding(
-                        get: { trackAtIndex(webTracklist, index).time.exact.description },
-                        set: { webTracklist.tracks[index].time = Time(string: $0) })
-                    )
-                    .background(
-                      trackAtIndex(webTracklist, index).time.isEstimated
-                        ? Color.red.opacity(0.3) : Color.clear
-                    )
-                    .frame(width: 60)
-                    .multilineTextAlignment(.trailing)
-                  }
-                  VStack {
-                    TextField(
-                      "",
-                      text: Binding(
-                        get: { trackAtIndex(webTracklist, index).artist },
-                        set: { webTracklist.tracks[index].artist = $0 })
-                    )
-                    TextField(
-                      "",
-                      text: Binding(
-                        get: { trackAtIndex(webTracklist, index).title },
-                        set: { webTracklist.tracks[index].title = $0 })
-                    )
+                      TextField(
+                        "",
+                        text: Binding(
+                          get: { trackAtIndex(webTracklist, index).time.exact.description },
+                          set: { webTracklist.tracks[index].time = Time(string: $0) })
+                      )
+                      .background(
+                        trackAtIndex(webTracklist, index).time.isEstimated
+                          ? Color.red.opacity(0.3) : Color.clear
+                      )
+                      .frame(width: 60)
+                      .multilineTextAlignment(.trailing)
+                    }
+                    VStack {
+                      TextField(
+                        "",
+                        text: Binding(
+                          get: { trackAtIndex(webTracklist, index).artist },
+                          set: { webTracklist.tracks[index].artist = $0 })
+                      )
+                      TextField(
+                        "",
+                        text: Binding(
+                          get: { trackAtIndex(webTracklist, index).title },
+                          set: { webTracklist.tracks[index].title = $0 })
+                      )
+                    }
                   }
                 }
               }
+              .padding(.vertical)
+              .padding(.horizontal)
             }
-            .padding(.vertical)
-            .padding(.horizontal)
+          } else {
+            Text("Cue file will not be written. You can enable it in the Settings.")
           }
         } else {
           Text("No tracklist found. Please navigate to a tracklist page.")

@@ -1,9 +1,16 @@
 import SwiftUI
 import WebKit
 
+class NavigationState: ObservableObject {
+  @Published var canGoBack: Bool = false
+  @Published var canGoForward: Bool = false
+  @Published var currentURL: URL?
+}
+
 struct TracklistWebView: NSViewRepresentable {
   let url: URL
   let setTracklist: @Sendable (Tracklist?) -> Void
+  let navigationState: NavigationState
 
   // Store coordinator reference to access from instance methods
   private class CoordinatorReference {
@@ -12,7 +19,7 @@ struct TracklistWebView: NSViewRepresentable {
   private let coordinatorRef = CoordinatorReference()
 
   func makeCoordinator() -> Coordinator {
-    let coordinator = Coordinator(setTracklist: setTracklist)
+    let coordinator = Coordinator(setTracklist: setTracklist, navigationState: navigationState)
     coordinatorRef.coordinator = coordinator
     return coordinator
   }
@@ -26,13 +33,41 @@ struct TracklistWebView: NSViewRepresentable {
     webView.navigationDelegate = context.coordinator
     context.coordinator.webView = webView
     coordinatorRef.coordinator = context.coordinator
+
+    // Observe navigation state changes
+    webView.addObserver(context.coordinator, forKeyPath: "canGoBack", options: [.new], context: nil)
+    webView.addObserver(
+      context.coordinator, forKeyPath: "canGoForward", options: [.new], context: nil)
+    context.coordinator.hasObservers = true
+
+    // Initialize navigation state
+    Task { @MainActor in
+      navigationState.canGoBack = webView.canGoBack
+      navigationState.canGoForward = webView.canGoForward
+      navigationState.currentURL = webView.url ?? url
+    }
+
     return webView
   }
 
   func updateNSView(_ nsView: WKWebView, context: Context) {
     context.coordinator.webView = nsView
     coordinatorRef.coordinator = context.coordinator
-    nsView.load(URLRequest(url: url))
+
+    // Ensure observers are set up if not already
+    if !context.coordinator.hasObservers {
+      nsView.addObserver(
+        context.coordinator, forKeyPath: "canGoBack", options: [.new], context: nil)
+      nsView.addObserver(
+        context.coordinator, forKeyPath: "canGoForward", options: [.new], context: nil)
+      context.coordinator.hasObservers = true
+    }
+
+    // Only load if URL has changed
+    if context.coordinator.currentURL != url {
+      context.coordinator.currentURL = url
+      nsView.load(URLRequest(url: url))
+    }
   }
 
   @MainActor
@@ -45,12 +80,69 @@ struct TracklistWebView: NSViewRepresentable {
     coordinatorRef.coordinator?.navigateToURL(url)
   }
 
+  @MainActor
+  func goBack() {
+    coordinatorRef.coordinator?.goBack()
+  }
+
+  @MainActor
+  func goForward() {
+    coordinatorRef.coordinator?.goForward()
+  }
+
+  @MainActor
+  func reload() {
+    coordinatorRef.coordinator?.reload()
+  }
+
   class Coordinator: NSObject, WKNavigationDelegate {
     let setTracklist: @Sendable (Tracklist?) -> Void
+    nonisolated(unsafe) let navigationState: NavigationState
     weak var webView: WKWebView?
+    var hasObservers: Bool = false
+    var currentURL: URL?
 
-    init(setTracklist: @escaping @Sendable (Tracklist?) -> Void) {
+    init(setTracklist: @escaping @Sendable (Tracklist?) -> Void, navigationState: NavigationState) {
       self.setTracklist = setTracklist
+      self.navigationState = navigationState
+    }
+
+    deinit {
+      if hasObservers {
+        webView?.removeObserver(self, forKeyPath: "canGoBack")
+        webView?.removeObserver(self, forKeyPath: "canGoForward")
+      }
+    }
+
+    override func observeValue(
+      forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?,
+      context: UnsafeMutableRawPointer?
+    ) {
+      guard let webView = webView else { return }
+      nonisolated(unsafe) let navState = navigationState
+
+      DispatchQueue.main.async {
+        if keyPath == "canGoBack" {
+          navState.canGoBack = webView.canGoBack
+        } else if keyPath == "canGoForward" {
+          navState.canGoForward = webView.canGoForward
+        }
+      }
+    }
+
+    @MainActor
+    func goBack() {
+      webView?.goBack()
+    }
+
+    @MainActor
+    func goForward() {
+      webView?.goForward()
+    }
+
+    @MainActor
+    func reload() {
+      webView?.reload()
     }
 
     @MainActor
@@ -70,6 +162,11 @@ struct TracklistWebView: NSViewRepresentable {
     func navigateToURL(_ url: URL) {
       guard let webView = webView else { return }
       webView.load(URLRequest(url: url))
+      // Update URL immediately for better UX
+      nonisolated(unsafe) let navState = navigationState
+      DispatchQueue.main.async {
+        navState.currentURL = url
+      }
     }
 
     func attemptToExtractTracklist(webView: WKWebView) {
@@ -224,6 +321,14 @@ struct TracklistWebView: NSViewRepresentable {
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
       self.attemptToExtractTracklist(webView: webView)
+
+      // Update navigation state after page loads
+      nonisolated(unsafe) let navState = navigationState
+      DispatchQueue.main.async {
+        navState.canGoBack = webView.canGoBack
+        navState.canGoForward = webView.canGoForward
+        navState.currentURL = webView.url
+      }
     }
   }
 }

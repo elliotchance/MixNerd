@@ -53,6 +53,8 @@ struct TracklistEditorWebView: View {
   @State private var duration: String = ""
   private var audioFileCollection: AudioFileCollection = AudioFileCollection()
   @State private var tracklistWebView: TracklistWebView?
+  @StateObject private var navigationState = NavigationState()
+  @State private var urlText: String = ""
   @State private var destinationFolder: URL?
 
   @AppStorage(Settings.RenameFilesKey) private var renameFiles: Bool = Settings.RenameFilesDefault
@@ -79,7 +81,8 @@ struct TracklistEditorWebView: View {
         Task { @MainActor in
           stateRef.setWebTracklist(tracklist)
         }
-      }
+      },
+      navigationState: navigationState
     )
   }
 
@@ -115,14 +118,79 @@ struct TracklistEditorWebView: View {
     }
   }
 
+  @MainActor
+  private func navigateToURLString(_ urlString: String) {
+    var urlString = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    // Add https:// if no scheme is present
+    if !urlString.contains("://") {
+      urlString = "https://" + urlString
+    }
+
+    if let url = URL(string: urlString) {
+      tracklistWebView?.navigateToURL(url)
+    }
+  }
+
   var body: some View {
     GeometryReader { geometry in
       HStack(alignment: .top, spacing: 0) {
         if let tracklistWebView = tracklistWebView {
-          tracklistWebView
-            .frame(width: geometry.size.width - tracklistWebViewWidth, height: geometry.size.height)
-            .border(Color.gray.opacity(0.3))
-            .clipped()
+          VStack(spacing: 0) {
+            // Navigation bar
+            HStack(spacing: 8) {
+              Button(action: {
+                tracklistWebView.goBack()
+              }) {
+                Image(systemName: "chevron.left")
+              }
+              .buttonStyle(.borderless)
+              .disabled(!navigationState.canGoBack)
+
+              Button(action: {
+                tracklistWebView.goForward()
+              }) {
+                Image(systemName: "chevron.right")
+              }
+              .buttonStyle(.borderless)
+              .disabled(!navigationState.canGoForward)
+
+              Button(action: {
+                tracklistWebView.reload()
+              }) {
+                Image(systemName: "arrow.clockwise")
+              }
+              .buttonStyle(.borderless)
+
+              TextField("URL", text: $urlText)
+                .textFieldStyle(.plain)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color(NSColor.textBackgroundColor))
+                .cornerRadius(4)
+                .overlay(
+                  RoundedRectangle(cornerRadius: 4)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+                .onSubmit {
+                  navigateToURLString(urlText)
+                }
+
+              Spacer()
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(Color(NSColor.controlBackgroundColor))
+            .border(Color.gray.opacity(0.2), width: 1)
+
+            tracklistWebView
+              .frame(
+                width: geometry.size.width - tracklistWebViewWidth,
+                height: geometry.size.height - 40
+              )
+              .border(Color.gray.opacity(0.3))
+              .clipped()
+          }
         }
 
         VStack(alignment: .leading, spacing: 0) {
@@ -274,6 +342,12 @@ struct TracklistEditorWebView: View {
       .onAppear {
         if tracklistWebView == nil {
           tracklistWebView = makeTracklistWebView()
+          urlText = initialURL.absoluteString
+        }
+      }
+      .onChange(of: navigationState.currentURL) { _, newURL in
+        if let url = newURL {
+          urlText = url.absoluteString
         }
       }
       .onChange(of: state.webTracklist?.duration.exact.description ?? "") { oldValue, newValue in
