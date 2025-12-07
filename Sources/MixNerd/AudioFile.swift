@@ -27,6 +27,7 @@ class AudioFile {
         source: AudioFile.stringValue(tagContentReader.iTunesGrouping() ?? ""),
         genre: AudioFile.stringValue(tagContentReader.genre()?.description),
         duration: Time(at: TimeInterval(tagContentReader.lengthInMilliseconds() ?? 0) / 1000),
+        audioFilePath: audioFilePath,
 
         // TODO: Could be extracted from the comment - if that's needed?
         // shortLink: "",

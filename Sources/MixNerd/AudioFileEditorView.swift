@@ -28,7 +28,11 @@ struct AudioFileEditorView: View {
       VStack(spacing: 0) {
         HStack {
           Button("Search 1001tracklists") {
-            searchForTracklist("\(fileTracklist.artist) \(fileTracklist.title)")
+            var searchString = "\(fileTracklist.artist) \(fileTracklist.title)"
+            if searchString.isEmpty {
+              searchString = fileTracklist.audioFilePath?.lastPathComponent ?? ""
+            }
+            searchForTracklist(searchString)
           }
           Button("Save") {
             save()

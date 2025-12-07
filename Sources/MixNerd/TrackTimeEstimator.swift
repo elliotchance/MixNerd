@@ -14,7 +14,7 @@ class TrackTimeEstimator {
       if index == 0 && time.at == 0 {
         return (0, 0.0)
       }
-      guard time.at > 0 else {
+      guard time.at > 0 && !time.isEstimated else {
         return nil
       }
       return (index, time.at)
@@ -38,7 +38,7 @@ class TrackTimeEstimator {
 
       for offset in 0..<gapCount {
         let index = offset
-        if result[index].at == 0 {
+        if result[index].at == 0 || result[index].isEstimated {
           result[index] = Time(estimatedAt: Double(offset) * step)
         }
       }
@@ -56,7 +56,7 @@ class TrackTimeEstimator {
 
       for offset in 1...gapCount {
         let index = left.0 + offset
-        if result[index].at == 0 {
+        if result[index].at == 0 || result[index].isEstimated {
           result[index] = Time(estimatedAt: left.1 + step * Double(offset))
         }
       }
@@ -71,7 +71,7 @@ class TrackTimeEstimator {
 
         for offset in 1...remaining {
           let index = lastKnown.0 + offset
-          if result[index].at == 0 {
+          if result[index].at == 0 || result[index].isEstimated {
             result[index] = Time(estimatedAt: lastKnown.1 + step * Double(offset))
           }
         }

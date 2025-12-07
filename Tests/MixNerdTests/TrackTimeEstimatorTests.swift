@@ -7,7 +7,13 @@ struct TrackTimeEstimatorTests {
   let estimator = TrackTimeEstimator()
 
   func toTimes(_ times: [String]) -> [Time] {
-    return times.map { Time(string: $0) }
+    return times.map { time in
+      if time.hasPrefix("~") {
+        return Time(estimatedAt: Time(string: String(time.dropFirst())).at)
+      } else {
+        return Time(string: time)
+      }
+    }
   }
 
   @Test
@@ -113,5 +119,67 @@ struct TrackTimeEstimatorTests {
     #expect(result.count == 2)
     #expect(result[0].description == "00:00")  // First track at 0:00 is correct, not estimated
     #expect(result[1].description == "~30:00")  // step = 3600 / 2 = 1800
+  }
+
+  @Test
+  func testEstimate_recalculatesWithNewTotalTime() {
+    let times = toTimes(["01:40", "10:00", "0:00", "0:00"])
+
+    // First call with 30 minutes total time
+    let firstTotalTime: TimeInterval = 1800.0
+    let firstResult = estimator.estimate(times: times, totalTime: firstTotalTime)
+
+    #expect(firstResult.count == 4)
+    #expect(firstResult[0].description == "01:40")
+    #expect(firstResult[1].description == "10:00")
+    // Trailing zeros: (1800 - 600) / 3 = 400 per step
+    #expect(firstResult[2].description == "~16:40")  // 600 + 400 = 1000
+    #expect(firstResult[3].description == "~23:20")  // 600 + 800 = 1400
+
+    // Second call with 60 minutes total time - should recalculate
+    let secondTotalTime: TimeInterval = 3600.0
+    let secondResult = estimator.estimate(times: times, totalTime: secondTotalTime)
+
+    #expect(secondResult.count == 4)
+    #expect(secondResult[0].description == "01:40")
+    #expect(secondResult[1].description == "10:00")
+    // Trailing zeros: (3600 - 600) / 3 = 1000 per step
+    #expect(secondResult[2].description == "~26:40")  // 600 + 1000 = 1600
+    #expect(secondResult[3].description == "~43:20")  // 600 + 2000 = 2600
+
+    // Verify the estimated times are different
+    #expect(secondResult[2].at != firstResult[2].at)
+    #expect(secondResult[3].at != firstResult[3].at)
+  }
+
+  @Test
+  func testEstimate_recalculatesWithNewTotalTime2() {
+    let times = toTimes(["01:40", "10:00", "~16:40", "~23:20"])
+
+    // Second call with 60 minutes total time - should recalculate
+    let secondTotalTime: TimeInterval = 3600.0
+    let secondResult = estimator.estimate(times: times, totalTime: secondTotalTime)
+
+    #expect(secondResult.count == 4)
+    #expect(secondResult[0].description == "01:40")
+    #expect(secondResult[1].description == "10:00")
+    // Trailing zeros: (3600 - 600) / 3 = 1000 per step
+    #expect(secondResult[2].description == "~26:40")  // 600 + 1000 = 1600
+    #expect(secondResult[3].description == "~43:20")  // 600 + 2000 = 2600
+  }
+
+  @Test
+  func testEstimate_recalculatesWithNewTotalTime3() {
+    let times = toTimes(["~01:40", "~10:00", "~16:40", "~23:20"])
+
+    // Second call with 60 minutes total time - should recalculate
+    let secondTotalTime: TimeInterval = 3600.0
+    let secondResult = estimator.estimate(times: times, totalTime: secondTotalTime)
+
+    #expect(secondResult.count == 4)
+    #expect(secondResult[0].description == "~00:00")
+    #expect(secondResult[1].description == "~15:00")
+    #expect(secondResult[2].description == "~30:00")
+    #expect(secondResult[3].description == "~45:00")
   }
 }

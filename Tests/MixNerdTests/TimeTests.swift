@@ -63,22 +63,29 @@ struct TimeTests {
   @Test
   func testInit_string_oneComponent() {
     let time = Time(string: "45")
-    #expect(time.at == 45.0)
-    #expect(time.isEstimated == false)
+    #expect(time.at == 0.0)
+    #expect(time.isEstimated == true)
   }
 
   @Test
   func testInit_string_oneComponent_zero() {
     let time = Time(string: "0")
     #expect(time.at == 0.0)
-    #expect(time.isEstimated == false)
+    #expect(time.isEstimated == true)
   }
 
   @Test
   func testInit_string_oneComponent_large() {
     let time = Time(string: "3661")
-    #expect(time.at == 3661.0)
-    #expect(time.isEstimated == false)
+    #expect(time.at == 0.0)
+    #expect(time.isEstimated == true)
+  }
+
+  @Test
+  func testInit_string_empty() {
+    let time = Time(string: "")
+    #expect(time.at == 0.0)
+    #expect(time.isEstimated == true)
   }
 
   @Test
@@ -181,5 +188,130 @@ struct TimeTests {
   func testDescription_largeTime_estimated() {
     let time = Time(estimatedAt: 123456)
     #expect(time.description == "~34:17:36")
+  }
+
+  @Test
+  func testIsValidTimeString_empty() {
+    #expect(Time.isValidTimeString("") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_singleComponent() {
+    #expect(Time.isValidTimeString("45") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_singleComponent_zero() {
+    #expect(Time.isValidTimeString("0") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_singleComponent_decimal() {
+    #expect(Time.isValidTimeString("125.5") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_twoComponents() {
+    #expect(Time.isValidTimeString("2:30") == true)
+  }
+
+  @Test
+  func testIsValidTimeString_twoComponents_zero() {
+    #expect(Time.isValidTimeString("0:0") == true)
+  }
+
+  @Test
+  func testIsValidTimeString_twoComponents_decimal() {
+    #expect(Time.isValidTimeString("2.5:30.7") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_threeComponents() {
+    #expect(Time.isValidTimeString("1:30:45") == true)
+  }
+
+  @Test
+  func testIsValidTimeString_threeComponents_zero() {
+    #expect(Time.isValidTimeString("0:0:0") == true)
+  }
+
+  @Test
+  func testIsValidTimeString_threeComponents_decimal() {
+    #expect(Time.isValidTimeString("1.5:30.2:45.8") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_twoComponents_firstDecimal() {
+    #expect(Time.isValidTimeString("2.5:30") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_twoComponents_secondDecimal() {
+    #expect(Time.isValidTimeString("2:30.7") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_threeComponents_firstDecimal() {
+    #expect(Time.isValidTimeString("1.5:30:45") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_threeComponents_secondDecimal() {
+    #expect(Time.isValidTimeString("1:30.2:45") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_threeComponents_thirdDecimal() {
+    #expect(Time.isValidTimeString("1:30:45.8") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_moreThanThreeComponents() {
+    #expect(Time.isValidTimeString("1:2:3:4") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_fiveComponents() {
+    #expect(Time.isValidTimeString("1:2:3:4:5") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_nonNumeric_single() {
+    #expect(Time.isValidTimeString("abc") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_nonNumeric_firstComponent() {
+    #expect(Time.isValidTimeString("abc:2") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_nonNumeric_secondComponent() {
+    #expect(Time.isValidTimeString("1:abc") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_nonNumeric_thirdComponent() {
+    #expect(Time.isValidTimeString("1:2:abc") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_emptyComponent_doubleColon() {
+    #expect(Time.isValidTimeString("1::2") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_emptyComponent_leadingColon() {
+    #expect(Time.isValidTimeString(":2") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_emptyComponent_trailingColon() {
+    #expect(Time.isValidTimeString("1:") == false)
+  }
+
+  @Test
+  func testIsValidTimeString_emptyComponent_trailingColonThree() {
+    #expect(Time.isValidTimeString("1:2:") == false)
   }
 }

@@ -26,10 +26,10 @@ The `.cue` file works with many players - including the awesome - [VOX](https://
 
 # TODO
 
-- Search button should use file name if tags are not set.
-- Cue calculations are incorrect.
-- UI should show which tracks have estimated times.
 - Show error when file cannot be moved.
 - Add navigation buttons for webview.
 - "Open..." does not cleanly refresh the second time.
 - Saving a file gives no feedback and does not remove from file list.
+- "Album" is hardcoded with the date.
+- Create the settings page.
+- Psy-Nation Radio 020 2019-08-15 shows the first track time as estimated but also 0:00.

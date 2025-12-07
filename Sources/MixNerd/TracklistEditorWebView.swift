@@ -29,6 +29,7 @@ struct TracklistEditorWebView: View {
   private let tracklistWebViewWidth = 400.0
   @State private var pickerOptions: [String]
   @State private var selectedPickerOption: String
+  @State private var duration: String = ""
   private var audioFileCollection: AudioFileCollection = AudioFileCollection()
   @State private var tracklistWebView: TracklistWebView?
   @State private var destinationFolder: URL?
@@ -74,15 +75,17 @@ struct TracklistEditorWebView: View {
             Button("Open...") {
               isOpeningFile = true
             }
-            .controlSize(.small)
-            .padding()
+            // .controlSize(.small)
+            .padding(.vertical)
+            .padding(.leading)
 
             Picker("", selection: $selectedPickerOption) {
               ForEach(pickerOptions, id: \.self) { option in
                 Text(option).tag(option)
               }
             }
-            .padding()
+            .padding(.vertical)
+            .padding(.trailing)
           }
           .frame(maxWidth: .infinity)
 
@@ -92,6 +95,7 @@ struct TracklistEditorWebView: View {
                 get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
               estimateMissingTrackTimes: $estimateMissingTrackTimes,
               includeLabels: $includeLabels,
+              duration: $duration
             )
           } else if selectedPickerOption == "Settings" {
             SettingsView()
@@ -197,6 +201,9 @@ struct TracklistEditorWebView: View {
         if tracklistWebView == nil {
           tracklistWebView = makeTracklistWebView()
         }
+      }
+      .onChange(of: state.webTracklist?.duration.exact.description ?? "") { newValue in
+        duration = newValue
       }
     }
   }

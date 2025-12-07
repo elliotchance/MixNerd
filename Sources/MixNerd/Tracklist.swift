@@ -14,6 +14,8 @@ struct Tracklist: @unchecked Sendable {
 
   var duration: Time = Time()
 
+  var audioFilePath: URL?
+
   func withEstimatedTrackTimes(totalTime: Time) -> Tracklist {
     guard !tracks.isEmpty else {
       return self
@@ -21,14 +23,11 @@ struct Tracklist: @unchecked Sendable {
 
     let times = tracks.map { $0.time }
     let estimator = TrackTimeEstimator()
-    let estimatedTimes = estimator.estimate(times: times, totalTime: duration.at)
+    let estimatedTimes = estimator.estimate(times: times, totalTime: totalTime.at)
 
     var updatedTracks = tracks
     for (index, estimatedTime) in estimatedTimes.enumerated() {
-      // Only update if the original time was empty (at == 0 and not estimated)
-      // if updatedTracks[index].time.at == 0 && !updatedTracks[index].time.isEstimated {
       updatedTracks[index].time = estimatedTime
-      // }
     }
 
     return Tracklist(
@@ -41,6 +40,7 @@ struct Tracklist: @unchecked Sendable {
       tracks: updatedTracks,
       shortLink: shortLink,
       duration: totalTime,
+      audioFilePath: audioFilePath,
     )
   }
 }

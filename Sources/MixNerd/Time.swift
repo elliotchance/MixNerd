@@ -19,8 +19,35 @@ struct Time: CustomStringConvertible {
     self.isEstimated = true
   }
 
-  init(string: String) {
+  static func isValidTimeString(_ string: String) -> Bool {
     if string.isEmpty {
+      return false
+    }
+
+    // Check for empty components (leading colon, trailing colon, or double colon)
+    if string.hasPrefix(":") || string.hasSuffix(":") || string.contains("::") {
+      return false
+    }
+
+    let components = string.split(separator: ":")
+    guard components.count == 2 || components.count == 3 else {
+      return false
+    }
+
+    for component in components {
+      guard let intValue = Int(component) else {
+        return false
+      }
+      guard intValue >= 0 else {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  init(string: String) {
+    if !Time.isValidTimeString(string) {
       self.at = 0
       self.isEstimated = true
       return
