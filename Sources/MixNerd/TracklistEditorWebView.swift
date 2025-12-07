@@ -16,14 +16,16 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
     .CommentFormatDefault
 
   @MainActor
-  func setWebTracklist(_ tl: Tracklist?) {
+  func setWebTracklist(_ tl: Tracklist?, format: Bool) {
     if var tl = tl {
-      let formatter = TracklistFormatter()
-      tl.artist = formatter.format(tracklist: tl, format: artistFormat, escapeForPath: false)  // Artist
-      tl.title = formatter.format(tracklist: tl, format: albumFormat, escapeForPath: false)  // Album
-      tl.genre = formatter.format(tracklist: tl, format: genreFormat, escapeForPath: false)  // Genre
-      tl.grouping = formatter.format(tracklist: tl, format: groupingFormat, escapeForPath: false)  // Grouping
-      tl.comment = formatter.format(tracklist: tl, format: commentFormat, escapeForPath: false)  // Comment
+      if format {
+        let formatter = TracklistFormatter()
+        tl.artist = formatter.format(tracklist: tl, format: artistFormat, escapeForPath: false)  // Artist
+        tl.title = formatter.format(tracklist: tl, format: albumFormat, escapeForPath: false)  // Album
+        tl.genre = formatter.format(tracklist: tl, format: genreFormat, escapeForPath: false)  // Genre
+        tl.grouping = formatter.format(tracklist: tl, format: groupingFormat, escapeForPath: false)  // Grouping
+        tl.comment = formatter.format(tracklist: tl, format: commentFormat, escapeForPath: false)  // Comment
+      }
 
       webTracklist = tl.withEstimatedTrackTimes(totalTime: webTracklist?.duration ?? Time())
     } else {
@@ -79,7 +81,7 @@ struct TracklistEditorWebView: View {
       url: initialURL,
       setTracklist: { tracklist in
         Task { @MainActor in
-          stateRef.setWebTracklist(tracklist)
+          stateRef.setWebTracklist(tracklist, format: true)
         }
       },
       navigationState: navigationState
@@ -214,7 +216,8 @@ struct TracklistEditorWebView: View {
           if selectedPickerOption == "Tracklist" {
             TextTracklistView(
               tracklist: Binding(
-                get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
+                get: { state.webTracklist ?? Tracklist() },
+                set: { state.setWebTracklist($0, format: false) }),
               estimateMissingTrackTimes: $estimateMissingTrackTimes,
               includeLabels: $includeLabels,
               duration: $duration
@@ -230,7 +233,8 @@ struct TracklistEditorWebView: View {
                 },
                 set: { state.setFileTracklist($0) }),
               webTracklist: Binding(
-                get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
+                get: { state.webTracklist ?? Tracklist() },
+                set: { state.setWebTracklist($0, format: false) }),
               searchForTracklist: { name in
                 tracklistWebView?.searchForTracklist(name: name)
               },
