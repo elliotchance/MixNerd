@@ -105,41 +105,44 @@ let pathFormatTests: [PathFormatTest] = [
 ]
 
 @Test
-func testPathFormatter_yearComponent_returnsYearString() {
+func testTracklistFormatter_yearComponent_returnsYearString() {
   var tracklist = Tracklist()
   tracklist.date = Date(year: 2025, month: 11, day: 4)
 
-  let formatter = PathFormatter()
+  let formatter = TracklistFormatter()
   #expect(formatter.yearComponent(tracklist: tracklist) == "2025")
 }
 
 @Test
-func testPathFormatter_artistComponent_returnsArtistString() {
+func testTracklistFormatter_artistComponent_returnsArtistString() {
   var tracklist = Tracklist()
   tracklist.artist = "Artist"
 
-  let formatter = PathFormatter()
+  let formatter = TracklistFormatter()
   #expect(formatter.artistComponent(tracklist: tracklist) == "Artist")
 }
 
 @Test(arguments: pathComponentTests)
-func testPathFormatter_componentEscapedForPath(test: PathComponentTest) {
-  let formatter = PathFormatter()
+func testTracklistFormatter_componentEscapedForPath(test: PathComponentTest) {
+  let formatter = TracklistFormatter()
   #expect(formatter.componentEscapedForPath(component: test.input) == test.expected)
 }
 
 @Test(arguments: pathNamedComponentTests)
-func testPathFormatter_componentNamed_returnsExpectedComponent(test: PathNamedComponentTest) {
+func testTracklistFormatter_componentNamed_returnsExpectedComponent(test: PathNamedComponentTest) {
   var tracklist = Tracklist()
   tracklist.artist = "Artist"
   tracklist.date = Date(year: 2025, month: 11, day: 4)
 
-  let formatter = PathFormatter()
+  let formatter = TracklistFormatter()
   #expect(formatter.component(named: test.named, tracklist: tracklist) == test.expected)
 }
 
 @Test(arguments: pathFormatTests)
-func testPathFormatter_format_replacesNamedComponentsAndEscapes(test: PathFormatTest) {
-  let formatter = PathFormatter()
-  #expect(formatter.format(path: test.path, tracklist: test.tracklist) == test.expected)
+func testTracklistFormatter_format_replacesNamedComponentsAndEscapes(test: PathFormatTest) {
+  let formatter = TracklistFormatter()
+  #expect(
+    formatter.format(
+      tracklist: test.tracklist, format: test.path, escapeForPath: true)
+      == test.expected)
 }

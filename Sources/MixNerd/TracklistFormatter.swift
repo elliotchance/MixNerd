@@ -1,14 +1,14 @@
 import Foundation
 
-class PathFormatter {
-  /// Formats a path containing named components. For example:
+class TracklistFormatter {
+  /// Formats a string containing named components. For example:
   /// "Path/{year}/{artist} - {title}" -> "Path/2025/Armin van Buuren - A State of Trance 368"
-  func format(path: String, tracklist: Tracklist) -> String {
+  func format(tracklist: Tracklist, format: String, escapeForPath: Bool = false) -> String {
     var result = ""
     var currentName = ""
     var isInPlaceholder = false
 
-    for character in path {
+    for character in format {
       if character == "{" {
         if isInPlaceholder {
           // Nested `{` – treat the previous `{` and collected name as literal.
@@ -23,7 +23,8 @@ class PathFormatter {
 
       if character == "}" && isInPlaceholder {
         let componentValue = component(named: currentName, tracklist: tracklist)
-        result.append(componentEscapedForPath(component: componentValue))
+        result.append(
+          escapeForPath ? componentEscapedForPath(component: componentValue) : componentValue)
 
         currentName = ""
         isInPlaceholder = false
@@ -66,6 +67,10 @@ class PathFormatter {
     return tracklist.source
   }
 
+  func shortLinkComponent(tracklist: Tracklist) -> String {
+    return tracklist.shortLink?.absoluteString ?? ""
+  }
+
   /// Escapes a component for use in a path.
   /// Unsafe characters are replaced with an underscore.
   func componentEscapedForPath(component: String) -> String {
@@ -82,6 +87,8 @@ class PathFormatter {
       return artistComponent(tracklist: tracklist)
     case "date":
       return dateComponent(tracklist: tracklist)
+    case "shortLink":
+      return shortLinkComponent(tracklist: tracklist)
     case "source":
       return sourceComponent(tracklist: tracklist)
     case "title":

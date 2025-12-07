@@ -26,23 +26,22 @@ class AudioFile {
         title: AudioFile.stringValue(tagContentReader.title()),
         source: AudioFile.stringValue(tagContentReader.iTunesGrouping() ?? ""),
         genre: AudioFile.stringValue(tagContentReader.genre()?.description),
+        comment: AudioFile.stringValue(tagContentReader.comments().first?.content),
         duration: Time(at: TimeInterval(tagContentReader.lengthInMilliseconds() ?? 0) / 1000),
         audioFilePath: audioFilePath,
-
-        // TODO: Could be extracted from the comment - if that's needed?
-        // shortLink: "",
       )
     }
   }
 
-  private var formatter: PathFormatter = PathFormatter()
+  private var formatter: TracklistFormatter = TracklistFormatter()
 
   // Returns a new ID3Tag (which may lose some other fields). We only use the latest v2.4.
   // I'm not sure if this should be intended or not.
   func id3Tag() -> ID3Tag {
     let albumFormat =
       UserDefaults.standard.string(forKey: Settings.AlbumFormatKey) ?? Settings.AlbumFormatDefault
-    let albumTitle = formatter.format(path: albumFormat, tracklist: tracklist ?? Tracklist())
+    let albumTitle = formatter.format(
+      tracklist: tracklist ?? Tracklist(), format: albumFormat, escapeForPath: false)
 
     let id3Tag = ID32v4TagBuilder()
 
@@ -71,7 +70,7 @@ class AudioFile {
         frame: ID3FrameWithLocalizedContent(
           language: .eng,
           contentDescription: "",
-          content: tracklist?.shortLink?.absoluteString ?? ""
+          content: tracklist?.comment ?? ""
         ))
 
     if let date = tracklist?.date {

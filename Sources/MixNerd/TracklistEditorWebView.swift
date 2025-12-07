@@ -122,11 +122,13 @@ struct TracklistEditorWebView: View {
 
                     // Now move and write other files.
                     do {
+                      // TODO: Move this into config.
                       let fileDestination = destinationFolder.appendingPathComponent(
-                        PathFormatter().format(
-                          path:
+                        TracklistFormatter().format(
+                          tracklist: tracklist,
+                          format:
                             "{source}/{year}/{date} {artist} - {title}/{date} {artist} - {title}",
-                          tracklist: tracklist))
+                          escapeForPath: true))
                       let folderDestination = fileDestination.deletingLastPathComponent()
 
                       try FileManager.default.createDirectory(

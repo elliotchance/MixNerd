@@ -46,14 +46,14 @@ public class Date: CustomStringConvertible {
   }
 
   convenience init(fromID3TagContentReader tagContentReader: ID3TagContentReader) {
-    let date = tagContentReader.recordingDateTime()
-    self.init(year: date?.year ?? 0, month: date?.month ?? 0, day: date?.day ?? 0)
+    let year = tagContentReader.recordingDateTime()?.year
+    self.init(year: year ?? 0, month: 0, day: 0)
   }
 
   func toID3FrameRecordingDateTime() -> ID3FrameRecordingDateTime {
     return ID3FrameRecordingDateTime(
       recordingDateTime: RecordingDateTime(
-        date: RecordingDate(day: day, month: month, year: year), time: nil))
+        date: RecordingDate(day: 0, month: 0, year: year), time: nil))
   }
 
   public var description: String {

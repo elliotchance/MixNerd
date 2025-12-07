@@ -13,7 +13,9 @@ struct AudioFileEditorView: View {
   let save: () throws -> Void
 
   @AppStorage(Settings.AlbumFormatKey) private var albumFormat: String = Settings.AlbumFormatDefault
-  private var formatter: PathFormatter = PathFormatter()
+  @AppStorage(Settings.CommentFormatKey) private var commentFormat: String = Settings
+    .CommentFormatDefault
+  private var formatter: TracklistFormatter = TracklistFormatter()
 
   init(
     fileTracklist: Binding<Tracklist>, webTracklist: Binding<Tracklist>,
@@ -63,7 +65,10 @@ struct AudioFileEditorView: View {
               label: "Album",
               oldValue: Binding(get: { fileTracklist.title }, set: { fileTracklist.title = $0 }),
               newValue: Binding(
-                get: { formatter.format(path: albumFormat, tracklist: webTracklist) },
+                get: {
+                  formatter.format(
+                    tracklist: webTracklist, format: albumFormat, escapeForPath: false)
+                },
                 set: { webTracklist.title = $0 }),
             )
             ToggleTextField(
@@ -77,22 +82,25 @@ struct AudioFileEditorView: View {
               newValue: Binding(get: { webTracklist.genre }, set: { webTracklist.genre = $0 }),
             )
             ToggleTextField(
-              label: "Date",
+              label: "Year",
               oldValue: Binding(
-                get: { fileTracklist.date.description },
+                get: { fileTracklist.date.year.description },
                 set: { fileTracklist.date = Date(fromString: $0) }),
               newValue: Binding(
-                get: { webTracklist.date.description },
+                get: { webTracklist.date.year.description },
                 set: { webTracklist.date = Date(fromString: $0) }),
             )
             ToggleTextField(
               label: "Comment",
               oldValue: Binding(
-                get: { fileTracklist.shortLink?.absoluteString ?? "" },
-                set: { fileTracklist.shortLink = URL(string: $0) }),
+                get: { fileTracklist.comment },
+                set: { fileTracklist.comment = $0 }),
               newValue: Binding(
-                get: { webTracklist.shortLink?.absoluteString ?? "" },
-                set: { webTracklist.shortLink = URL(string: $0) }),
+                get: {
+                  formatter.format(
+                    tracklist: webTracklist, format: commentFormat, escapeForPath: false)
+                },
+                set: { webTracklist.comment = $0 }),
             )
           }
           .padding()

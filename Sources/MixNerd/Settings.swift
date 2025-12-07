@@ -26,4 +26,7 @@ class Settings {
 
   static let AlbumFormatKey = "settings.album_format"
   static let AlbumFormatDefault = "{date} {title}"
+
+  static let CommentFormatKey = "settings.comment_format"
+  static let CommentFormatDefault = "{shortLink}"
 }

@@ -7,6 +7,7 @@ struct Tracklist: @unchecked Sendable {
   var title: String = ""
   var source: String = ""
   var genre: String = ""
+  var comment: String = ""
   var tracks: [Track] = []
 
   // e.g. https://1001.tl/1u7zqrvk
@@ -37,6 +38,7 @@ struct Tracklist: @unchecked Sendable {
       title: title,
       source: source,
       genre: genre,
+      comment: comment,
       tracks: updatedTracks,
       shortLink: shortLink,
       duration: totalTime,
