@@ -38,7 +38,7 @@ struct AudioFileEditorView: View {
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.bottom)
 
-        if webTracklist.shortLink != nil {
+        if webTracklist.tracks.count > 0 {
           ArtworkView(artwork: Binding(get: { webTracklist.artwork }, set: { _ in }))
             .frame(width: 200, height: 200)
 
@@ -51,7 +51,9 @@ struct AudioFileEditorView: View {
             ToggleTextField(
               label: "Album",
               oldValue: Binding(get: { fileTracklist.title }, set: { fileTracklist.title = $0 }),
-              newValue: Binding(get: { webTracklist.title }, set: { webTracklist.title = $0 }),
+              newValue: Binding(
+                get: { "\(webTracklist.date) \(webTracklist.title)" },  // FIXME: Put into config.
+                set: { webTracklist.title = $0 }),
             )
             ToggleTextField(
               label: "Grouping",
@@ -84,6 +86,19 @@ struct AudioFileEditorView: View {
           }
           .padding()
 
+          let estimatedCount = webTracklist.tracks.filter { $0.time.isEstimated }.count
+          let totalCount = webTracklist.tracks.count
+          if estimatedCount > 1 {
+            Text("\(estimatedCount)/\(totalCount) tracks have estimated times")
+              .bold()
+              .foregroundColor(.red)
+              .padding(.bottom, 5)
+          } else {
+            Text("\(totalCount)/\(totalCount) have track times")
+              .foregroundColor(.green)
+              .padding(.bottom, 5)
+          }
+
           ScrollView {
             Form {
               ForEach(Array(webTracklist.tracks.enumerated()), id: \.element.id) { index, track in
@@ -91,34 +106,31 @@ struct AudioFileEditorView: View {
                   VStack {
                     Text(String(format: "%02d", index + 1)).font(.title3).bold()
 
-                    ToggleTextField(
-                      label: "",
-                      oldValue: Binding(
-                        get: { trackAtIndex(fileTracklist, index).time }, set: { _ in }),
-                      newValue: Binding(
-                        get: { trackAtIndex(webTracklist, index).time },
-                        set: { webTracklist.tracks[index].time = $0 }),
+                    TextField(
+                      "",
+                      text: Binding(
+                        get: { trackAtIndex(webTracklist, index).time.exact.description },
+                        set: { webTracklist.tracks[index].time = Time(string: $0) })
                     )
-                    .frame(width: 80)
-                    .font(.system(.body, design: .monospaced))
+                    .background(
+                      trackAtIndex(webTracklist, index).time.isEstimated
+                        ? Color.red.opacity(0.3) : Color.clear
+                    )
+                    .frame(width: 60)
                     .multilineTextAlignment(.trailing)
                   }
                   VStack {
-                    ToggleTextField(
-                      label: "",
-                      oldValue: Binding(
-                        get: { trackAtIndex(fileTracklist, index).artist }, set: { _ in }),
-                      newValue: Binding(
+                    TextField(
+                      "",
+                      text: Binding(
                         get: { trackAtIndex(webTracklist, index).artist },
-                        set: { webTracklist.tracks[index].artist = $0 }),
+                        set: { webTracklist.tracks[index].artist = $0 })
                     )
-                    ToggleTextField(
-                      label: "",
-                      oldValue: Binding(
-                        get: { trackAtIndex(fileTracklist, index).title }, set: { _ in }),
-                      newValue: Binding(
+                    TextField(
+                      "",
+                      text: Binding(
                         get: { trackAtIndex(webTracklist, index).title },
-                        set: { webTracklist.tracks[index].title = $0 }),
+                        set: { webTracklist.tracks[index].title = $0 })
                     )
                   }
                 }
@@ -147,6 +159,6 @@ struct AudioFileEditorView: View {
     if index < tracklist.tracks.count {
       return tracklist.tracks[index]
     }
-    return Track(time: "", artist: "", title: "")
+    return Track(time: Time(at: 0), artist: "", title: "")
   }
 }

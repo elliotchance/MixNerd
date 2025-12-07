@@ -16,14 +16,14 @@ struct AudioFileTests {
     tracklist.title = "Dreamstate Radio 077"
     tracklist.date = date
     tracklist.tracks = [
-      Track(time: "00:00", artist: "Artist 1", title: "Track 1"),
-      Track(time: "05:30", artist: "Artist 2", title: "Track 2"),
-      Track(time: "67:15", artist: "Artist 3", title: "Track 3"),
+      Track(time: Time(string: "00:00"), artist: "Artist 1", title: "Track 1"),
+      Track(time: Time(string: "05:30"), artist: "Artist 2", title: "Track 2"),
+      Track(time: Time(string: "67:15"), artist: "Artist 3", title: "Track 3"),
     ]
 
     audioFile.tracklist = tracklist
 
-    let content = audioFile.cueFileContent()
+    let content = audioFile.cueFile().content()
 
     // Extract the dynamic date line
     let lines = content.components(separatedBy: "\n")

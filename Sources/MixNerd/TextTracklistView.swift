@@ -19,6 +19,7 @@ struct TextTracklistView: View {
         .frame(width: artworkSize, height: artworkSize)
 
       Form {
+        Text("Duration: \(tracklist.duration.description)")
         Toggle("Estimate missing track times", isOn: $estimateMissingTrackTimes)
           .toggleStyle(.checkbox)
         Toggle("Include labels", isOn: $includeLabels)
@@ -64,68 +65,14 @@ struct TextTracklistView: View {
   }
 
   private var displayTracklistText: String {
-    /*
-    Armin van Buuren - A State Of Trance 001 2001-06-01
-
-[00:15] Warrior - Voodoo (Oliver Lieb Remix) [INCENTIVE]
-[05:45] Mutiny - Secrets (Ian Wilkie C-bit Dub Mix) [VC]
-[11:26] Joker Jam - Innocence (Planisphere Remix) [GREEN MARTIAN]
-[19:49] Liquid DJ Team - Liquidation (Marco V Remix) [UNITED]
-Tune Of The Week:
-[24:36] Sonic Inc. - The Taste Of Summer (Fire & Ice Vital Remix) [BONZAI]
-[31:13] Natural Born Grooves - Kickback (TDR Remix) [NATURAL BORN GROOVES]
-[37:11] RR Workshop - 50K [JOURNEY]
-Classic:
-[43:34] The Ultimate Seduction - The Ultimate Seduction [VENDETTA (BLANCO Y NEGRO)]
-[47:57] System F ft. Armin van Buuren - Exhale (Inhale Remix) [TSUNAMI]
-[53:32] Blank & Jones - Tribal Attack [GANG GO]
-Armin van Buuren Non-Stop In The Mix:
-[59:30] Drax & Scott Mac - Sublime (Darkstar Remix)
-[1:06:30] Orion ft. Rebecca Raine - See Me Here (Darren Tate Beachcomber Dub Mix) [MONDO]
-[1:12:58] Xian - Pachinko (Praha Part 2 Remix) [PLATIPUS]
-[1:18:29] Rising Star - Clear Blue Moon [ARMIND (ARMADA)]
-[1:27:21] Ralphie B - Massive [ITWT (BLACK HOLE)]
-[1:35:31] Members Of Mayday - 10 In 01 (Paul van Dyk Remix) [DEVIANT]
-[1:41:49] Rank 1 ft. Shanokee - Such Is Life [ID&T]
-[1:48:10] S.O.L.I.S. - Dolphins [ALIEN]
-[1:55:55] Armin van Buuren - Blue Fear [CYBER (ARMADA)]
-
-Please set a backlink to keep the tracklist up-to-date: https://1001.tl/38zxw8k
-
-
-Armin van Buuren - A State Of Trance 000 2001-05-18
-
-A State Of Trance Preview Part 1
-01. Satoshi Tomiie ft. Kelli Ali - Love In Traffic (Satoshi Tomiie Dark Path Remix) [INCREDIBLE]
-02. Utah Saints - Lost Vagueness (Oliver Lieb Main Mix) [ECHO]
-[13:25] Orion ft. Rebecca Raine - See Me Here (Skope Vocal Mix) [MONDO]
-04. Yahel - U Inside [CYBER (ARMADA)]
-05. Transa - Kinetic [HOOK]
-06. Natural Born Grooves - Kickback (TDR Remix) [NATURAL BORN GROOVES]
-07. Perpetuous Dreamer ft. Elles De Graaf - The Sound Of Goodbye (Above & Beyond Remix) [ARMIND (ARMADA)]
-08. Airwave - Mysteries Of Life [BONZAI TRANCE PROG]
-09. Rising Star - Star Theme [ARMIND (ARMADA)]
-A State Of Trance Preview Part 2
-10. Delerium ft. Leigh Nash - Innocente (Mr Sam The Space Between Us Mix) [NETTWERK]
-11. Green Court ft. De Vision - Take (Chrome Romance In Ny Remix) [CLUB CULTURE]
-12. Moogwai - The Labyrinth (Part Two) [PLATIPUS]
-13. Guy Naets & Michel Bierlin - Beam Me Up! [PROGREZ]
-14. Coast 2 Coast ft. Discovery - Home (Tiësto Remix) [ID&T]
-15. Ultra Vibe - Choose Freedom [CAMOUFLAGE (SUBTRAXX)]
-16. System F - Mode Confusion [FLASHOVER]
-17. M.I.K.E. pres. Push - Strange World (Airwave Remix) [BONZAI]
-18. Dennis M - Right Now [REZZONANT]
-
-Please set a backlink to keep the tracklist up-to-date: https://1001.tl/2xbh9b9
-*/
     var s = "\(tracklist.artist) - \(tracklist.title) \(tracklist.date)\n\n"
 
     var trackNumber = 1
     for track in tracklist.tracks {
-      if track.timeIsEstimated && !estimateMissingTrackTimes {
+      if track.time.isEstimated && !estimateMissingTrackTimes {
         s += "\(String(format: "%02d", trackNumber)). \(track.artist) - \(track.title)"
       } else {
-        s += "[\(track.formattedTime())] \(track.artist) - \(track.title)"
+        s += "[\(track.time.description)] \(track.artist) - \(track.title)"
       }
       if includeLabels && !track.label.isEmpty {
         s += " [\(track.label)]"
@@ -135,7 +82,7 @@ Please set a backlink to keep the tracklist up-to-date: https://1001.tl/2xbh9b9
     }
 
     s +=
-      "\nPlease set a backlink to keep the tracklist up-to-date: \(tracklist.shortLink)\n"
+      "\nPlease set a backlink to keep the tracklist up-to-date: \(tracklist.shortLink?.absoluteString ?? "")\n"
 
     return s
   }

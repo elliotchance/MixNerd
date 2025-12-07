@@ -15,12 +15,6 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
   func makeCoordinator() -> Coordinator {
     let coordinator = Coordinator(setTracklist: setTracklist)
     coordinatorRef.coordinator = coordinator
-    // Provide the search function to the parent if needed
-    // if let onSearchAvailable = onSearchAvailable {
-    //   onSearchAvailable { [weak coordinator] name in
-    //     coordinator?.searchForTracklist(name: name)
-    //   }
-    // }
     return coordinator
   }
 
@@ -82,7 +76,21 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
           artist: TitleParser().parseArtist(currentTitle),
           title: TitleParser().parseTitle(currentTitle),
           source: "",
+          duration: Time(),
         )
+
+        // Extract the duration
+        let jsDuration = """
+          (function() {
+            return $('li.tBtn').text().match(/\\[((\\d+:)?(\\d+):(\\d+))\\]/)[1];
+          })();
+          """
+        webView.evaluateJavaScript(jsDuration) { result, _ in
+          if let duration = result as? String {
+            tracklist.duration = Time(string: duration)
+          }
+          setTracklist(tracklist)
+        }
 
         // Extract artwork
         let js = """
@@ -190,7 +198,7 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
               if let track = track as? [String: Any] {
                 tracklist.tracks.append(
                   Track(
-                    time: String(describing: track["time"] ?? ""),
+                    time: Time(string: String(describing: track["time"] ?? "")),
                     artist: String(describing: track["artist"] ?? ""),
                     title: String(describing: track["title"] ?? ""),
                     label: String(describing: track["label"] ?? ""),

@@ -23,3 +23,13 @@ The `.cue` file works with many players - including the awesome - [VOX](https://
 <p align="center">
     <img src="https://github.com/elliotchance/MixNerd/blob/main/Resources/screenshots/vox.png?raw=true" width="400" />
 </p>
+
+# TODO
+
+- Search button should use file name if tags are not set.
+- Cue calculations are incorrect.
+- UI should show which tracks have estimated times.
+- Show error when file cannot be moved.
+- Add navigation buttons for webview.
+- "Open..." does not cleanly refresh the second time.
+- Saving a file gives no feedback and does not remove from file list.

@@ -26,7 +26,7 @@ class AudioFile {
         title: AudioFile.stringValue(tagContentReader.title()),
         source: AudioFile.stringValue(tagContentReader.iTunesGrouping() ?? ""),
         genre: AudioFile.stringValue(tagContentReader.genre()?.description),
-        duration: TimeInterval(tagContentReader.lengthInMilliseconds() ?? 0) / 1000,
+        duration: Time(at: TimeInterval(tagContentReader.lengthInMilliseconds() ?? 0) / 1000),
 
         // TODO: Could be extracted from the comment - if that's needed?
         // shortLink: "",
@@ -100,7 +100,7 @@ class AudioFile {
       title: "\(tracklist?.date.description ?? "") \(tracklist?.title ?? "")",
       file: audioFilePath.lastPathComponent,
       tracks: tracklist?.tracks.map {
-        CueTrack(performer: $0.artist, title: $0.title, time: .seconds($0.timeSeconds()))
+        CueTrack(performer: $0.artist, title: $0.title, time: .seconds($0.time.at))
       } ?? [],
     )
   }

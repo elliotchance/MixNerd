@@ -8,12 +8,12 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
 
   @MainActor
   func setWebTracklist(_ tl: Tracklist?) {
-    webTracklist = tl?.withCalculatedMissingTrackTimes() ?? nil
+    webTracklist = tl?.withEstimatedTrackTimes(totalTime: webTracklist?.duration ?? Time()) ?? nil
   }
 
   @MainActor
   func setFileTracklist(_ tl: Tracklist?) {
-    fileTracklist = tl
+    fileTracklist = tl?.withEstimatedTrackTimes(totalTime: fileTracklist?.duration ?? Time()) ?? nil
   }
 }
 
@@ -91,7 +91,7 @@ struct TracklistEditorWebView: View {
               tracklist: Binding(
                 get: { state.webTracklist ?? Tracklist() }, set: { state.setWebTracklist($0) }),
               estimateMissingTrackTimes: $estimateMissingTrackTimes,
-              includeLabels: $includeLabels
+              includeLabels: $includeLabels,
             )
           } else if selectedPickerOption == "Settings" {
             SettingsView()
@@ -121,7 +121,8 @@ struct TracklistEditorWebView: View {
                     do {
                       let fileDestination = destinationFolder.appendingPathComponent(
                         PathFormatter().format(
-                          path: "{source}/{year}/{date} {title}/{date} {title}",
+                          path:
+                            "{source}/{year}/{date} {artist} - {title}/{date} {artist} - {title}",
                           tracklist: tracklist))
                       let folderDestination = fileDestination.deletingLastPathComponent()
 
