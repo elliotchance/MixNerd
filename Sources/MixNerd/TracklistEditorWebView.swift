@@ -75,7 +75,6 @@ struct TracklistEditorWebView: View {
             Button("Open...") {
               isOpeningFile = true
             }
-            // .controlSize(.small)
             .padding(.vertical)
             .padding(.leading)
 
@@ -180,6 +179,8 @@ struct TracklistEditorWebView: View {
                 selectedFolder.stopAccessingSecurityScopedResource()
               }
 
+              audioFileCollection.reset()
+
               let files = try FileManager.default.contentsOfDirectory(
                 at: selectedFolder, includingPropertiesForKeys: nil)
 
@@ -187,6 +188,11 @@ struct TracklistEditorWebView: View {
                 if file.pathExtension == "mp3" {
                   audioFileCollection.addAudioFile(audioFilePath: file)
                 }
+              }
+
+              if let firstFile = audioFileCollection.firstFile() {
+                selectedPickerOption = firstFile.audioFilePath.lastPathComponent
+                state.setFileTracklist(firstFile.tracklist)
               }
             } catch {
               self.error = error

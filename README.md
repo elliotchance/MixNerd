@@ -28,6 +28,7 @@ The `.cue` file works with many players - including the awesome - [VOX](https://
 
 - Add navigation buttons for webview.
 - "Open..." does not cleanly refresh the second time.
+- Load first file on open.
 - Saving a file gives no feedback and does not remove from file list.
 - "Album" is hardcoded with the date.
 - Create the settings page.

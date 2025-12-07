@@ -20,4 +20,12 @@ class AudioFileCollection {
       $0.audioFilePath.lastPathComponent < $1.audioFilePath.lastPathComponent
     }
   }
+
+  func firstFile() -> AudioFile? {
+    return audioFiles.values.first
+  }
+
+  func reset() {
+    audioFiles = [:]
+  }
 }
