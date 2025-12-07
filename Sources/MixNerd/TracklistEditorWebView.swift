@@ -202,6 +202,8 @@ struct TracklistEditorWebView: View {
 
               audioFileCollection.reset()
 
+              audioFileCollection.addFolder(folderPath: selectedFolder)
+
               let files = try FileManager.default.contentsOfDirectory(
                 at: selectedFolder, includingPropertiesForKeys: nil)
 

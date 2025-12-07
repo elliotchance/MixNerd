@@ -7,6 +7,20 @@ class AudioFileCollection {
     self.audioFiles = [:]
   }
 
+  func addFolder(folderPath: URL) {
+    for file in FileManager.default.contentsOfDirectory(
+      at: folderPath, includingPropertiesForKeys: nil)
+    {
+      if file.pathExtension == "mp3" {
+        print("Adding audio file: \(file)")
+        // addAudioFile(audioFilePath: file)
+      }
+      if file.isDirectory {
+        addFolder(folderPath: file)
+      }
+    }
+  }
+
   func addAudioFile(audioFilePath: URL) {
     audioFiles[audioFilePath] = AudioFile(fromFilePath: audioFilePath)
   }
