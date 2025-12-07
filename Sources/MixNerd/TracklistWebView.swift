@@ -1,10 +1,9 @@
 import SwiftUI
 import WebKit
 
-struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
+struct TracklistWebView: NSViewRepresentable {
   let url: URL
   let setTracklist: @Sendable (Tracklist?) -> Void
-  // var onSearchAvailable: ((@escaping (String) -> Void) -> Void)?
 
   // Store coordinator reference to access from instance methods
   private class CoordinatorReference {
@@ -224,13 +223,7 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-      let parent = self
-      // webView.find("Please wait, you will be forwarded") { result in
-      //   print("result: \(result.matchFound)")
-      //   if !result.matchFound {
-      parent.attemptToExtractTracklist(webView: webView)
-      //   }
-      // }
+      self.attemptToExtractTracklist(webView: webView)
     }
   }
 }
