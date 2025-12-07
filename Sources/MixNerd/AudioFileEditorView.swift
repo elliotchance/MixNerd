@@ -12,9 +12,14 @@ struct AudioFileEditorView: View {
   let searchForTracklist: (String) -> Void
   let save: () throws -> Void
 
+  @AppStorage(Settings.ArtistFormatKey) private var artistFormat: String = Settings
+    .ArtistFormatDefault
   @AppStorage(Settings.AlbumFormatKey) private var albumFormat: String = Settings.AlbumFormatDefault
   @AppStorage(Settings.CommentFormatKey) private var commentFormat: String = Settings
     .CommentFormatDefault
+  @AppStorage(Settings.GroupingFormatKey) private var groupingFormat: String = Settings
+    .GroupingFormatDefault
+  @AppStorage(Settings.GenreFormatKey) private var genreFormat: String = Settings.GenreFormatDefault
   private var formatter: TracklistFormatter = TracklistFormatter()
 
   init(
@@ -57,9 +62,14 @@ struct AudioFileEditorView: View {
 
           Form {
             ToggleTextField(
-              label: "Album Artist",
+              label: "Artist",
               oldValue: Binding(get: { fileTracklist.artist }, set: { fileTracklist.artist = $0 }),
-              newValue: Binding(get: { webTracklist.artist }, set: { webTracklist.artist = $0 }),
+              newValue: Binding(
+                get: {
+                  formatter.format(
+                    tracklist: webTracklist, format: artistFormat, escapeForPath: false)
+                },
+                set: { webTracklist.artist = $0 }),
             )
             ToggleTextField(
               label: "Album",
@@ -74,12 +84,22 @@ struct AudioFileEditorView: View {
             ToggleTextField(
               label: "Grouping",
               oldValue: Binding(get: { fileTracklist.source }, set: { fileTracklist.source = $0 }),
-              newValue: Binding(get: { webTracklist.source }, set: { webTracklist.source = $0 }),
+              newValue: Binding(
+                get: {
+                  formatter.format(
+                    tracklist: webTracklist, format: groupingFormat, escapeForPath: false)
+                },
+                set: { webTracklist.source = $0 }),
             )
             ToggleTextField(
               label: "Genre",
               oldValue: Binding(get: { fileTracklist.genre }, set: { fileTracklist.genre = $0 }),
-              newValue: Binding(get: { webTracklist.genre }, set: { webTracklist.genre = $0 }),
+              newValue: Binding(
+                get: {
+                  formatter.format(
+                    tracklist: webTracklist, format: genreFormat, escapeForPath: false)
+                },
+                set: { webTracklist.genre = $0 }),
             )
             ToggleTextField(
               label: "Year",

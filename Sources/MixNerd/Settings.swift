@@ -1,32 +1,34 @@
 class Settings {
-  // DateFormat described how to format the date for audio file tags.
-  static let DateFormatKey = "settings.date_format"
-  static let DateFormatDefault = "YYYY-MM-DD"
-  static let DateFormatValues = [
-    "YYYY-MM-DD": "YYYY-MM-DD",
-    "YYYY": "YYYY",
-  ]
-
-  static let DateInTitleKey = "settings.date_in_title"
-  static let DateInTitleDefault = "Before"
-  static let DateInTitleValues = [
-    "Before": "Before (eg. Title 2025-01-02)",
-    "After": "After (eg. 2025-01-02 Title)",
-    "No date": "None (eg. Title)",
-  ]
-
-  static let MoveFilesKey = "settings.move_files"
-  static let MoveFilesDefault = false
-
-  static let DestinationKey = "settings.destination"
-  static let DestinationDefault = ""
-
-  static let FileNamingKey = "settings.file_naming"
-  static let FileNamingDefault = ""
+  // Audio tagging
+  static let ArtistFormatKey = "settings.artist_format"
+  static let ArtistFormatDefault = "{artist}"
 
   static let AlbumFormatKey = "settings.album_format"
-  static let AlbumFormatDefault = "{date} {title}"
+  static let AlbumFormatDefault = "{title}"
+
+  static let GroupingFormatKey = "settings.grouping_format"
+  static let GroupingFormatDefault = "{source}"
+
+  static let GenreFormatKey = "settings.genre_format"
+  static let GenreFormatDefault = "{genre}"
 
   static let CommentFormatKey = "settings.comment_format"
   static let CommentFormatDefault = "{shortLink}"
+
+  // Renaming files
+  static let RenameFilesKey = "settings.move_files"
+  static let RenameFilesDefault = false
+
+  static let RenameFileFormatKey = "settings.rename_file_format"
+  static let RenameFileFormatDefault = "{date} {artist} - {title}"
+
+  // Other files
+  static let WriteCoverFileKey = "settings.write_cover_file"
+  static let WriteCoverFileDefault = false
+
+  static let WriteCueFileKey = "settings.write_cue_file"
+  static let WriteCueFileDefault = true
+
+  static let WriteURLFileKey = "settings.write_url_file"
+  static let WriteURLFileDefault = false
 }

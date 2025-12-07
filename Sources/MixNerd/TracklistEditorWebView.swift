@@ -34,6 +34,16 @@ struct TracklistEditorWebView: View {
   @State private var tracklistWebView: TracklistWebView?
   @State private var destinationFolder: URL?
 
+  @AppStorage(Settings.RenameFilesKey) private var renameFiles: Bool = Settings.RenameFilesDefault
+  @AppStorage(Settings.RenameFileFormatKey) private var renameFileFormat: String = Settings
+    .RenameFileFormatDefault
+  @AppStorage(Settings.WriteCueFileKey) private var writeCueFile: Bool = Settings
+    .WriteCueFileDefault
+  @AppStorage(Settings.WriteURLFileKey) private var writeURLFile: Bool = Settings
+    .WriteURLFileDefault
+  @AppStorage(Settings.WriteCoverFileKey) private var writeCoverFile: Bool = Settings
+    .WriteCoverFileDefault
+
   init() {
     pickerOptions = ["Tracklist", "Settings"]
     selectedPickerOption = "Tracklist"
@@ -120,34 +130,43 @@ struct TracklistEditorWebView: View {
                     audioFile.tracklist = tracklist
                     try audioFile.save()
 
-                    // Now move and write other files.
                     do {
-                      // TODO: Move this into config.
-                      let fileDestination = destinationFolder.appendingPathComponent(
-                        TracklistFormatter().format(
-                          tracklist: tracklist,
-                          format:
-                            "{source}/{year}/{date} {artist} - {title}/{date} {artist} - {title}",
-                          escapeForPath: true))
-                      let folderDestination = fileDestination.deletingLastPathComponent()
+                      var folderDestination = destinationFolder
 
-                      try FileManager.default.createDirectory(
-                        at: folderDestination, withIntermediateDirectories: true, attributes: nil)
+                      if renameFiles {
+                        let fileDestination = destinationFolder.appendingPathComponent(
+                          TracklistFormatter().format(
+                            tracklist: tracklist,
+                            format: renameFileFormat,
+                            escapeForPath: true))
+                        folderDestination = fileDestination.deletingLastPathComponent()
 
-                      let audioFilePath = fileDestination.appendingPathExtension("mp3")
-                      try FileManager.default.moveItem(
-                        at: audioFile.audioFilePath, to: audioFilePath)
-                      audioFile.audioFilePath = audioFilePath
+                        try FileManager.default.createDirectory(
+                          at: folderDestination, withIntermediateDirectories: true, attributes: nil)
 
-                      let coverPath = folderDestination.appendingPathComponent("cover.jpg")
-                      tracklist.artwork.write(toFile: coverPath.path)
+                        let audioFilePath = fileDestination.appendingPathExtension("mp3")
+                        try FileManager.default.moveItem(
+                          at: audioFile.audioFilePath, to: audioFilePath)
+                        audioFile.audioFilePath = audioFilePath
+                      }
 
-                      audioFile.writeCUEFile()
+                      if writeCoverFile {
+                        let coverPath = folderDestination.appendingPathComponent("cover.jpg")
+                        tracklist.artwork.write(toFile: coverPath.path)
+                      }
 
-                      if let shortLink = tracklist.shortLink {
-                        tracklist.shortLink?.writeInternetShortcut(
-                          to: folderDestination.appendingPathComponent(
-                            "\(shortLink.lastPathComponent).url"))
+                      if writeCueFile {
+                        // Cue file is written to the same folder as the audio file,
+                        // which was updated if renamed above.
+                        audioFile.writeCUEFile()
+                      }
+
+                      if writeURLFile {
+                        if let shortLink = tracklist.shortLink {
+                          tracklist.shortLink?.writeInternetShortcut(
+                            to: folderDestination.appendingPathComponent(
+                              "\(shortLink.lastPathComponent).url"))
+                        }
                       }
                     } catch {
                       print("Error saving files: \(error)")

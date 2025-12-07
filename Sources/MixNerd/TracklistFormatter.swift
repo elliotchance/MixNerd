@@ -71,6 +71,10 @@ class TracklistFormatter {
     return tracklist.shortLink?.absoluteString ?? ""
   }
 
+  func genreComponent(tracklist: Tracklist) -> String {
+    return tracklist.genre
+  }
+
   /// Escapes a component for use in a path.
   /// Unsafe characters are replaced with an underscore.
   func componentEscapedForPath(component: String) -> String {
@@ -87,6 +91,8 @@ class TracklistFormatter {
       return artistComponent(tracklist: tracklist)
     case "date":
       return dateComponent(tracklist: tracklist)
+    case "genre":
+      return genreComponent(tracklist: tracklist)
     case "shortLink":
       return shortLinkComponent(tracklist: tracklist)
     case "source":

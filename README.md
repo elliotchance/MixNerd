@@ -33,3 +33,4 @@ The `.cue` file works with many players - including the awesome - [VOX](https://
 - "Album" is hardcoded with the date.
 - Create the settings page.
 - Psy-Nation Radio 020 2019-08-15 shows the first track time as estimated but also 0:00.
+- If a URL is found in the comment it should load it.

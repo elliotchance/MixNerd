@@ -1,51 +1,65 @@
 import SwiftUI
 
 struct SettingsView: View {
-  @AppStorage(Settings.DateFormatKey) var dateFormat: String = Settings.DateFormatDefault
-  @AppStorage(Settings.DateInTitleKey) var dateInTitle: String = Settings.DateInTitleDefault
-  @AppStorage(Settings.MoveFilesKey) var moveFiles: Bool = false  // Settings.MoveFilesDefault
-  @AppStorage(Settings.DestinationKey) var destination: String = ""  //Settings.DestinationDefault
-  @AppStorage(Settings.FileNamingKey) var fileNaming: String = ""  // Settings.FileNamingDefault
+  @AppStorage(Settings.RenameFilesKey) var renameFiles: Bool = Settings.RenameFilesDefault
+  @AppStorage(Settings.RenameFileFormatKey) var renameFileFormat: String = Settings
+    .RenameFileFormatDefault
+
+  @AppStorage(Settings.ArtistFormatKey) var artistFormat: String = Settings.ArtistFormatDefault
+  @AppStorage(Settings.AlbumFormatKey) var albumFormat: String = Settings.AlbumFormatDefault
+  @AppStorage(Settings.CommentFormatKey) var commentFormat: String = Settings.CommentFormatDefault
+  @AppStorage(Settings.GroupingFormatKey) var groupingFormat: String = Settings
+    .GroupingFormatDefault
+  @AppStorage(Settings.GenreFormatKey) var genreFormat: String = Settings.GenreFormatDefault
+
+  @AppStorage(Settings.WriteCoverFileKey) var writeCoverFile: Bool = Settings.WriteCoverFileDefault
+  @AppStorage(Settings.WriteCueFileKey) var writeCueFile: Bool = Settings.WriteCueFileDefault
+  @AppStorage(Settings.WriteURLFileKey) var writeURLFile: Bool = Settings.WriteURLFileDefault
 
   var body: some View {
     Form {
-      Section(header: Text("File Tagging").font(.headline)) {
-        Picker("Date Format", selection: $dateFormat) {
-          ForEach(Settings.DateFormatValues.keys.sorted(), id: \.self) { key in
-            Text(Settings.DateFormatValues[key]!).tag(key)
-          }
-        }
-        Text("Choose how dates are formatted when added to audio file tags.")
-          .font(.caption)
-          .foregroundColor(.secondary)
+      Section(header: Text("Audio Tag Formatting").font(.headline)) {
+        TextField("Artist", text: $artistFormat)
+        TextField("Album", text: $albumFormat)
+        TextField("Grouping", text: $groupingFormat)
+        TextField("Genre", text: $genreFormat)
+        TextField("Comment", text: $commentFormat)
 
-        Picker("Date in Title", selection: $dateInTitle) {
-          ForEach(Settings.DateInTitleValues.keys.sorted(), id: \.self) { key in
-            Text(Settings.DateInTitleValues[key]!).tag(key)
-          }
-        }
+        Text(
+          """
+          Placeholders:
+          {artist} (eg. Armin van Buuren)
+          {date} (eg. 2025-01-02)
+          {genre} (eg. Trance)
+          {shortLink} (eg. https://1001.tl/1u7zqrvk)
+          {source} (eg. A State of Trance)
+          {title} (eg. Title)
+          {year} (eg. 2025)
+          """
+        )
+        .font(.caption)
+        .foregroundColor(.secondary)
       }
 
       Spacer().frame(height: 16)
 
-      Section(header: Toggle("Move Files on Save", isOn: $moveFiles)) {
-        HStack {
-          TextField("Destination", text: $destination)
-          Button("...") {
-            let panel = NSOpenPanel()
-            panel.allowsMultipleSelection = false
-            panel.canChooseDirectories = true
-            panel.canChooseFiles = false
-            panel.begin { result in
-              if result == .OK {
-                destination = panel.url?.path ?? ""
-              }
-            }
-          }
-        }
-        TextField("File Naming", text: $fileNaming)
+      Section(header: Text("Other Files").font(.headline)) {
+        Toggle("Write .cue file", isOn: $writeCueFile)
+        Toggle("Write .url file", isOn: $writeURLFile)
+        Toggle("Write cover.jpg file", isOn: $writeCoverFile)
       }
-      .padding(.horizontal, 16)
+
+      Spacer().frame(height: 16)
+
+      Section(header: Text("Rename Files").font(.headline)) {
+        Toggle("Rename Files", isOn: $renameFiles)
+        TextField("File Naming", text: $renameFileFormat)
+          .disabled(!renameFiles)
+
+        Text("Use placeholders described above.")
+          .font(.caption)
+          .foregroundColor(.secondary)
+      }
     }
   }
 }
