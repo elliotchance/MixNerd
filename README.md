@@ -26,7 +26,6 @@ The `.cue` file works with many players - including the awesome - [VOX](https://
 
 # TODO
 
-- Show error when file cannot be moved.
 - Add navigation buttons for webview.
 - "Open..." does not cleanly refresh the second time.
 - Saving a file gives no feedback and does not remove from file list.

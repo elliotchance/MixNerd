@@ -10,12 +10,12 @@ struct AudioFileEditorView: View {
   @Binding var webTracklist: Tracklist  // TODO: Make this optional
   let titleHeight = 30.0
   let searchForTracklist: (String) -> Void
-  let save: () -> Void
+  let save: () throws -> Void
 
   init(
     fileTracklist: Binding<Tracklist>, webTracklist: Binding<Tracklist>,
     searchForTracklist: @escaping (String) -> Void,
-    save: @escaping () -> Void,
+    save: @escaping () throws -> Void,
   ) {
     _fileTracklist = fileTracklist
     _webTracklist = webTracklist
@@ -35,7 +35,11 @@ struct AudioFileEditorView: View {
             searchForTracklist(searchString)
           }
           Button("Save") {
-            save()
+            do {
+              try save()
+            } catch let saveError {
+              error = saveError
+            }
           }
           .disabled(webTracklist.shortLink == nil)
         }
@@ -150,13 +154,21 @@ struct AudioFileEditorView: View {
       }
     }
     .frame(maxHeight: .infinity, alignment: .top)
-    // .alert(isPresented: $showAlert, error: error) { _ in
-    //     Button("OK") {
-    //         // Handle acknowledgement.
-    //     }
-    // } message: { error in
-    //     // Text(error.recoverySuggestion ?? "Try again later.")
-    // }
+    .alert(
+      "Error",
+      isPresented: Binding(
+        get: { error != nil },
+        set: { if !$0 { error = nil } }
+      )
+    ) {
+      Button("OK") {
+        error = nil
+      }
+    } message: {
+      if let error = error {
+        Text(error.localizedDescription)
+      }
+    }
   }
 
   func trackAtIndex(_ tracklist: Tracklist, _ index: Int) -> Track {

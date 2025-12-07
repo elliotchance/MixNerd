@@ -13,7 +13,13 @@ struct ArtworkView: View {
             .scaledToFill()
             .clipped()
             .overlay(alignment: .bottomTrailing) {
-              Button(action: { saveArtwork(artwork) }) {
+              Button(action: {
+                do {
+                  try saveArtwork(artwork)
+                } catch {
+                  print("Error saving artwork: \(error)")
+                }
+              }) {
                 Label("Save", systemImage: "square.and.arrow.down")
                   .labelStyle(.titleAndIcon)
               }
@@ -27,7 +33,8 @@ struct ArtworkView: View {
     }
   }
 
-  fileprivate func saveArtwork(_ artwork: Artwork) {
+  @MainActor
+  fileprivate func saveArtwork(_ artwork: Artwork) throws {
     let imageData = artwork.jpegData()
     let panel = NSSavePanel()
     panel.title = "Save Artwork"
@@ -36,11 +43,7 @@ struct ArtworkView: View {
     panel.canCreateDirectories = true
 
     if panel.runModal() == .OK, let url = panel.url {
-      do {
-        try imageData.write(to: url)
-      } catch {
-        NSLog("Failed to save artwork: \(error.localizedDescription)")
-      }
+      try imageData.write(to: url)
     }
   }
 }

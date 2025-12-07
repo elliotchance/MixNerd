@@ -119,7 +119,7 @@ struct TracklistEditorWebView: View {
                   if let tracklist = state.webTracklist {
                     // Save the file in place first.
                     audioFile.tracklist = tracklist
-                    audioFile.save()
+                    try audioFile.save()
 
                     // Now move and write other files.
                     do {
@@ -150,6 +150,7 @@ struct TracklistEditorWebView: View {
                       }
                     } catch {
                       print("Error saving files: \(error)")
+                      throw error
                     }
                   }
                 }
@@ -202,7 +203,7 @@ struct TracklistEditorWebView: View {
           tracklistWebView = makeTracklistWebView()
         }
       }
-      .onChange(of: state.webTracklist?.duration.exact.description ?? "") { newValue in
+      .onChange(of: state.webTracklist?.duration.exact.description ?? "") { oldValue, newValue in
         duration = newValue
       }
     }

@@ -83,9 +83,9 @@ class AudioFile {
     return id3Tag.build()
   }
 
-  func save() {
+  func save() throws {
     let id3TagEditor = ID3TagEditor()
-    try? id3TagEditor.write(tag: id3Tag(), to: audioFilePath.path)
+    try id3TagEditor.write(tag: id3Tag(), to: audioFilePath.path)
   }
 
   static func stringValue(_ s: String?) -> String {
