@@ -17,6 +17,7 @@ struct ArtworkView: View {
                 do {
                   try saveArtwork(artwork)
                 } catch {
+                  // TODO: Show this to the user.
                   print("Error saving artwork: \(error)")
                 }
               }) {

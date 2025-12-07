@@ -78,6 +78,11 @@ class TrackTimeEstimator {
       }
     }
 
+    // If the first time is 0, it's always treated as exact.
+    if let first = result.first, first.at == 0 {
+      result[0] = Time(at: 0.0)
+    }
+
     return result
   }
 }

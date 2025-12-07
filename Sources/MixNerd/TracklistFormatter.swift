@@ -88,17 +88,17 @@ class TracklistFormatter {
   func component(named: String, tracklist: Tracklist) -> String {
     switch named {
     case "artist":
-      return artistComponent(tracklist: tracklist)
+      return tracklist.artistComponent
     case "date":
       return dateComponent(tracklist: tracklist)
     case "genre":
-      return genreComponent(tracklist: tracklist)
+      return tracklist.genreComponent
     case "shortLink":
       return shortLinkComponent(tracklist: tracklist)
     case "source":
       return sourceComponent(tracklist: tracklist)
     case "title":
-      return titleComponent(tracklist: tracklist)
+      return tracklist.titleComponent
     case "year":
       return yearComponent(tracklist: tracklist)
     default:

@@ -51,18 +51,14 @@ struct AudioFileEditorView: View {
             }
           }
           .disabled(webTracklist.shortLink == nil)
+
+          if newFilePath() != fileTracklist.audioFilePath?.path {
+            Image(systemName: "info.circle")
+              .help(newFilePath())
+          }
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.bottom)
-
-        if newFilePath() != fileTracklist.audioFilePath?.path {
-          Text("File will be renamed to:")
-            .foregroundColor(.orange)
-            .padding()
-
-          Text(newFilePath())
-            .padding(.bottom)
-        }
 
         if webTracklist.tracks.count > 0 {
           ArtworkView(artwork: Binding(get: { webTracklist.artwork }, set: { _ in }))

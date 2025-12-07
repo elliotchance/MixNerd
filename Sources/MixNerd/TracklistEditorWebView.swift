@@ -27,7 +27,7 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
         tl.comment = formatter.format(tracklist: tl, format: commentFormat, escapeForPath: false)  // Comment
       }
 
-      webTracklist = tl.withEstimatedTrackTimes(totalTime: webTracklist?.duration ?? Time())
+      webTracklist = tl.withEstimatedTrackTimes(totalTime: tl.duration)
     } else {
       webTracklist = nil
     }
@@ -35,8 +35,11 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
 
   @MainActor
   func setFileTracklist(_ tl: Tracklist?) {
-    fileTracklist = tl?.withEstimatedTrackTimes(totalTime: fileTracklist?.duration ?? Time()) ?? nil
-    print("fileTracklist changed: \(fileTracklist?.comment ?? "nil")")
+    if let tl = tl {
+      fileTracklist = tl.withEstimatedTrackTimes(totalTime: tl.duration)
+    } else {
+      fileTracklist = nil
+    }
   }
 }
 
@@ -290,7 +293,7 @@ struct TracklistEditorWebView: View {
                         }
                       }
                     } catch {
-                      print("Error saving files: \(error)")
+                      // TODO: Show this to the user.
                       throw error
                     }
                   }

@@ -177,89 +177,54 @@ struct TracklistWebView: NSViewRepresentable {
           return
         }
 
-        let currentTitle = webView.title ?? ""
-        var tracklist = Tracklist(
-          date: TitleParser().parseDate(currentTitle),
-          artist: TitleParser().parseArtist(currentTitle),
-          title: TitleParser().parseTitle(currentTitle),
-          source: "",
-          duration: Time(),
-        )
-
-        // Extract the duration
-        let jsDuration = """
+        // Extract all tracklist data in a single JavaScript execution
+        let jsExtractAll = """
           (function() {
-            return $('li.tBtn').text().match(/\\[((\\d+:)?(\\d+):(\\d+))\\]/)[1];
-          })();
-          """
-        webView.evaluateJavaScript(jsDuration) { result, _ in
-          if let duration = result as? String {
-            tracklist.duration = Time(string: duration)
-          }
-          setTracklist(tracklist)
-        }
+              const result = {
+                  duration: null,
+                  artwork: null,
+                  shortLink: null,
+                  genre: null,
+                  source: null,
+                  tracks: []
+              };
 
-        // Extract artwork
-        let js = """
-          (function() {
-            var el = document.getElementById('artworkLeft');
-            if (!el) { return ''; }
-            var bg = window.getComputedStyle(el).backgroundImage || el.style.backgroundImage || '';
-            return bg.substr(5, bg.length-7);
-          })();
-          """
-        webView.evaluateJavaScript(js) { result, _ in
-          if let urlString = result as? String, !urlString.isEmpty {
-            tracklist.artwork = Artwork(fromURL: URL(string: urlString)!)
-          }
+              // Extract duration
+              const durationMatch = $('li.tBtn').text().match(/\\[((\\d+:)?(\\d+):(\\d+))\\]/);
+              if (durationMatch) {
+                  result.duration = durationMatch[1];
+              }
 
-          setTracklist(tracklist)
-        }
+              // Extract artwork
+              const el = document.getElementById('artworkLeft');
+              if (el) {
+                  const bg = window.getComputedStyle(el).backgroundImage || el.style.backgroundImage || '';
+                  if (bg) {
+                      result.artwork = bg.substr(5, bg.length-7);
+                  }
+              }
 
-        // Extract the short link
-        let jsShortLink = """
-          (function() {
-              return $("div").filter(function() {
+              // Extract short link
+              const shortLinkDiv = $("div").filter(function() {
                   return $(this).text().trim() === "Short link";
               }).next("div").text().trim();
-          })();
-          """
-        webView.evaluateJavaScript(jsShortLink) { result, _ in
-          if let shortLink = result as? String {
-            tracklist.shortLink = URL(string: "https://\(shortLink)")
-          }
-          setTracklist(tracklist)
-        }
+              if (shortLinkDiv) {
+                  result.shortLink = shortLinkDiv;
+              }
 
-        // Extract the genre
-        let jsGenre = """
-          (function() {
-              return $("#tl_music_styles").text().trim();
-          })();
-          """
-        webView.evaluateJavaScript(jsGenre) { result, _ in
-          if let genre = result as? String {
-            tracklist.genre = genre
-          }
-          setTracklist(tracklist)
-        }
+              // Extract genre
+              const genre = $("#tl_music_styles").text().trim();
+              if (genre) {
+                  result.genre = genre;
+              }
 
-        // Extract the source
-        let jsSource = """
-          (function() {
-              return $('h1 a[href^="/source/"]').text();
-          })();
-          """
-        webView.evaluateJavaScript(jsSource) { result, _ in
-          if let source = result as? String {
-            tracklist.source = source
-          }
-          setTracklist(tracklist)
-        }
+              // Extract source
+              const source = $('h1 a[href^="/source/"]').text();
+              if (source) {
+                  result.source = source;
+              }
 
-        // Extract the tracks
-        let jsTracks = """
-          (function() {
+              // Extract tracks
               const trackStarts = [];
               $("div.bItm").each((i, t) => {
                   const text = $(t).text();
@@ -271,7 +236,7 @@ struct TracklistWebView: NSViewRepresentable {
                       //  1:16:31Estiva - Peppa[25-10-22 19:04:00]akselek
                       //  w/   1:50:38      Estiva - Via Infinita  COLORIZE (ENHANCED)
                       //  track wasn't played[25-10-20 23:34:30]biscram[poll:0/1/0]
-                      return
+                      return;
                   } else {
                       const startTime = $(t).find(".cue:last-of-type").text();
                       trackStarts.push(startTime);
@@ -279,28 +244,80 @@ struct TracklistWebView: NSViewRepresentable {
               });
 
               let trackNumber = 1;
-              const data = [];
               $("div.bItm.tlpItem").each((_, t) => {
                   if (!$(t).text().match(/^\\s*\\d+\\s+/)) {
-                      return
+                      return;
                   }
                   const parts = (
                       $(t).find("meta[itemprop=name]").attr("content") || $(t).find('span.trackValue').text()
                   ).split(" - ", 2);
-                  data.push({
-                    artist: parts[0].trim(),
-                    title: parts[1].trim(),
-                    time: trackStarts[trackNumber-1],
-                    label: $(t).find("span[title=label]").text().trim(),
+                  result.tracks.push({
+                      artist: parts[0].trim(),
+                      title: parts[1].trim(),
+                      time: trackStarts[trackNumber-1],
+                      label: $(t).find("span[title=label]").text().trim(),
                   });
                   ++trackNumber;
               });
 
-              return data;
+              return result;
           })();
           """
-        webView.evaluateJavaScript(jsTracks) { result, _ in
-          if let tracks = result as? [Any] {
+        webView.evaluateJavaScript(jsExtractAll) { result, _ in
+          guard let data = result as? [String: Any] else {
+            setTracklist(nil)
+            return
+          }
+
+          let currentTitle = webView.title ?? ""
+          var tracklist = Tracklist(
+            artwork: Artwork(),
+            date: TitleParser().parseDate(currentTitle),
+            artist: TitleParser().parseArtist(currentTitle),
+            title: TitleParser().parseTitle(currentTitle),
+            source: "",
+            genre: "",
+            comment: "",
+            tracks: [],
+            grouping: "",
+            shortLink: nil,
+            duration: Time(),
+            audioFilePath: nil,
+            artistComponent: TitleParser().parseArtist(currentTitle),
+            titleComponent: TitleParser().parseTitle(currentTitle),
+            genreComponent: "",
+          )
+
+          // Extract duration
+          if let duration = data["duration"] as? String {
+            tracklist.duration = Time(string: duration)
+          }
+
+          // Extract artwork
+          if let artworkURL = data["artwork"] as? String, !artworkURL.isEmpty,
+            let url = URL(string: artworkURL)
+          {
+            tracklist.artwork = Artwork(fromURL: url)
+          }
+
+          // Extract short link
+          if let shortLink = data["shortLink"] as? String {
+            tracklist.shortLink = URL(string: "https://\(shortLink)")
+          }
+
+          // Extract genre
+          if let genre = data["genre"] as? String {
+            tracklist.genre = genre
+            tracklist.genreComponent = genre
+          }
+
+          // Extract source
+          if let source = data["source"] as? String {
+            tracklist.source = source
+          }
+
+          // Extract tracks
+          if let tracks = data["tracks"] as? [Any] {
             for track in tracks {
               if let track = track as? [String: Any] {
                 tracklist.tracks.append(

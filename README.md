@@ -8,6 +8,8 @@ MixNerd is perfect for tagging and organizing your downloaded mp3 files. It can:
 2. **Move and rename files** on save.
 3. **Generate `.cue` files**, even when some track times are missing.
 
+# Quick Start
+
 Just **Open...** a folder contains mp3 files and bring up the tracklist page, the changed metadata will be shown in yellow:
 
 ![alt text](https://github.com/elliotchance/MixNerd/blob/main/Resources/screenshots/asot_1253.png?raw=true)
@@ -23,9 +25,3 @@ The `.cue` file works with many players - including the awesome - [VOX](https://
 <p align="center">
     <img src="https://github.com/elliotchance/MixNerd/blob/main/Resources/screenshots/vox.png?raw=true" width="400" />
 </p>
-
-# TODO
-
-- Add navigation buttons for webview.
-- Psy-Nation Radio 020 2019-08-15 shows the first track time as estimated but also 0:00.
-- Tracklist formatter compounds on itself with changes. Need to origina values.

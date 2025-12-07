@@ -1,3 +1,5 @@
+all: MixNerd.app
+
 .build/release/MixNerd: Sources/MixNerd/*.swift
 	swift build -c release
 
@@ -18,8 +20,6 @@ clean:
 	rm -rf MixNerd.app
 
 MixNerd.app: MixNerd.app/Contents/MacOS/MixNerd MixNerd.app/Contents/Resources MixNerd.app/Contents/Info.plist
-
-all: MixNerd.app
 
 test:
 	swift test -q

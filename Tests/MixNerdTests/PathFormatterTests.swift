@@ -41,8 +41,8 @@ let pathNamedComponentTests: [PathNamedComponentTest] = [
 
 func makeTracklist(artist: String, title: String, year: Int) -> Tracklist {
   var tracklist = Tracklist()
-  tracklist.artist = artist
-  tracklist.title = title
+  tracklist.artistComponent = artist
+  tracklist.titleComponent = title
   tracklist.date = Date(year: year, month: 1, day: 1)
   return tracklist
 }
@@ -131,7 +131,7 @@ func testTracklistFormatter_componentEscapedForPath(test: PathComponentTest) {
 @Test(arguments: pathNamedComponentTests)
 func testTracklistFormatter_componentNamed_returnsExpectedComponent(test: PathNamedComponentTest) {
   var tracklist = Tracklist()
-  tracklist.artist = "Artist"
+  tracklist.artistComponent = "Artist"
   tracklist.date = Date(year: 2025, month: 11, day: 4)
 
   let formatter = TracklistFormatter()

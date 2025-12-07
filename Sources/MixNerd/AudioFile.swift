@@ -24,11 +24,17 @@ class AudioFile {
         date: Date(fromID3TagContentReader: tagContentReader),
         artist: AudioFile.stringValue(tagContentReader.artist()),
         title: AudioFile.stringValue(tagContentReader.title()),
+        source: "",
         genre: AudioFile.stringValue(tagContentReader.genre()?.description),
         comment: AudioFile.stringValue(tagContentReader.comments().first?.content),
+        tracks: [],
         grouping: AudioFile.stringValue(tagContentReader.iTunesGrouping() ?? ""),
+        shortLink: nil,
         duration: Time(at: TimeInterval(tagContentReader.lengthInMilliseconds() ?? 0) / 1000),
         audioFilePath: audioFilePath,
+        artistComponent: AudioFile.stringValue(tagContentReader.artist()),
+        titleComponent: AudioFile.stringValue(tagContentReader.title()),
+        genreComponent: AudioFile.stringValue(tagContentReader.genre()?.description),
       )
     }
   }
