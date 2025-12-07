@@ -23,4 +23,7 @@ class Settings {
 
   static let FileNamingKey = "settings.file_naming"
   static let FileNamingDefault = ""
+
+  static let AlbumFormatKey = "settings.album_format"
+  static let AlbumFormatDefault = "{date} {title}"
 }

@@ -12,6 +12,9 @@ struct AudioFileEditorView: View {
   let searchForTracklist: (String) -> Void
   let save: () throws -> Void
 
+  @AppStorage(Settings.AlbumFormatKey) private var albumFormat: String = Settings.AlbumFormatDefault
+  private var formatter: PathFormatter = PathFormatter()
+
   init(
     fileTracklist: Binding<Tracklist>, webTracklist: Binding<Tracklist>,
     searchForTracklist: @escaping (String) -> Void,
@@ -60,7 +63,7 @@ struct AudioFileEditorView: View {
               label: "Album",
               oldValue: Binding(get: { fileTracklist.title }, set: { fileTracklist.title = $0 }),
               newValue: Binding(
-                get: { "\(webTracklist.date) \(webTracklist.title)" },  // FIXME: Put into config.
+                get: { formatter.format(path: albumFormat, tracklist: webTracklist) },
                 set: { webTracklist.title = $0 }),
             )
             ToggleTextField(

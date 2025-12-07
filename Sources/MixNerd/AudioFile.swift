@@ -35,14 +35,20 @@ class AudioFile {
     }
   }
 
+  private var formatter: PathFormatter = PathFormatter()
+
   // Returns a new ID3Tag (which may lose some other fields). We only use the latest v2.4.
   // I'm not sure if this should be intended or not.
   func id3Tag() -> ID3Tag {
+    let albumFormat =
+      UserDefaults.standard.string(forKey: Settings.AlbumFormatKey) ?? Settings.AlbumFormatDefault
+    let albumTitle = formatter.format(path: albumFormat, tracklist: tracklist ?? Tracklist())
+
     let id3Tag = ID32v4TagBuilder()
 
       // The title of the track and the album would be the same.
-      .title(frame: ID3FrameWithStringContent(content: tracklist?.title ?? ""))
-      .album(frame: ID3FrameWithStringContent(content: tracklist?.title ?? ""))
+      .title(frame: ID3FrameWithStringContent(content: albumTitle))
+      .album(frame: ID3FrameWithStringContent(content: albumTitle))
 
       // The track and album artist would also be the same.
       .albumArtist(frame: ID3FrameWithStringContent(content: tracklist?.artist ?? ""))
