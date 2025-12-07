@@ -6,14 +6,35 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
   @Published var webTracklist: Tracklist?
   @Published var fileTracklist: Tracklist?
 
+  @AppStorage(Settings.ArtistFormatKey) private var artistFormat: String = Settings
+    .ArtistFormatDefault
+  @AppStorage(Settings.AlbumFormatKey) private var albumFormat: String = Settings.AlbumFormatDefault
+  @AppStorage(Settings.GenreFormatKey) private var genreFormat: String = Settings.GenreFormatDefault
+  @AppStorage(Settings.GroupingFormatKey) private var groupingFormat: String = Settings
+    .GroupingFormatDefault
+  @AppStorage(Settings.CommentFormatKey) private var commentFormat: String = Settings
+    .CommentFormatDefault
+
   @MainActor
   func setWebTracklist(_ tl: Tracklist?) {
-    webTracklist = tl?.withEstimatedTrackTimes(totalTime: webTracklist?.duration ?? Time()) ?? nil
+    if var tl = tl {
+      let formatter = TracklistFormatter()
+      tl.artist = formatter.format(tracklist: tl, format: artistFormat, escapeForPath: false)  // Artist
+      tl.title = formatter.format(tracklist: tl, format: albumFormat, escapeForPath: false)  // Album
+      tl.genre = formatter.format(tracklist: tl, format: genreFormat, escapeForPath: false)  // Genre
+      tl.grouping = formatter.format(tracklist: tl, format: groupingFormat, escapeForPath: false)  // Grouping
+      tl.comment = formatter.format(tracklist: tl, format: commentFormat, escapeForPath: false)  // Comment
+
+      webTracklist = tl.withEstimatedTrackTimes(totalTime: webTracklist?.duration ?? Time())
+    } else {
+      webTracklist = nil
+    }
   }
 
   @MainActor
   func setFileTracklist(_ tl: Tracklist?) {
     fileTracklist = tl?.withEstimatedTrackTimes(totalTime: fileTracklist?.duration ?? Time()) ?? nil
+    print("fileTracklist changed: \(fileTracklist?.comment ?? "nil")")
   }
 }
 
@@ -64,10 +85,34 @@ struct TracklistEditorWebView: View {
 
   func refreshPickerOptions() {
     pickerOptions = ["Tracklist"]
+
     for file in audioFileCollection.allAudioFiles() {
       pickerOptions.append(file.audioFilePath.lastPathComponent)
     }
+
     pickerOptions.append("Settings")
+  }
+
+  private func extractURL(from text: String) -> URL? {
+    let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+    let range = NSRange(text.startIndex..., in: text)
+    let matches = detector?.matches(in: text, options: [], range: range)
+
+    if let firstMatch = matches?.first, let url = firstMatch.url {
+      return url
+    }
+
+    return nil
+  }
+
+  @MainActor
+  private func navigateToURLFromSelectedFile() {
+    if let audioFile = audioFileCollection.audioFileByName(name: selectedPickerOption) {
+      let comment = audioFile.tracklist?.comment ?? ""
+      if let url = extractURL(from: comment) {
+        tracklistWebView?.navigateToURL(url)
+      }
+    }
   }
 
   var body: some View {
@@ -139,15 +184,18 @@ struct TracklistEditorWebView: View {
                             tracklist: tracklist,
                             format: renameFileFormat,
                             escapeForPath: true))
-                        folderDestination = fileDestination.deletingLastPathComponent()
 
-                        try FileManager.default.createDirectory(
-                          at: folderDestination, withIntermediateDirectories: true, attributes: nil)
+                        try audioFileCollection.moveAudioFile(
+                          audioFile: audioFile,
+                          to: fileDestination.appendingPathExtension("mp3"))
 
-                        let audioFilePath = fileDestination.appendingPathExtension("mp3")
-                        try FileManager.default.moveItem(
-                          at: audioFile.audioFilePath, to: audioFilePath)
-                        audioFile.audioFilePath = audioFilePath
+                        refreshPickerOptions()
+                        selectedPickerOption = audioFile.audioFilePath.lastPathComponent
+                        state.setFileTracklist(audioFile.tracklist)
+
+                        // In case the file was moved, we need to use this folder for any other
+                        // optional files.
+                        folderDestination = audioFile.audioFilePath.deletingLastPathComponent()
                       }
 
                       if writeCoverFile {
@@ -176,6 +224,9 @@ struct TracklistEditorWebView: View {
                 }
               }
             )
+            .onChange(of: selectedPickerOption) { _, newValue in
+              navigateToURLFromSelectedFile()
+            }
           }
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
@@ -202,20 +253,14 @@ struct TracklistEditorWebView: View {
 
               audioFileCollection.reset()
 
-              audioFileCollection.addFolder(folderPath: selectedFolder)
+              try audioFileCollection.addFolder(folderPath: selectedFolder)
 
-              let files = try FileManager.default.contentsOfDirectory(
-                at: selectedFolder, includingPropertiesForKeys: nil)
-
-              for file in files {
-                if file.pathExtension == "mp3" {
-                  audioFileCollection.addAudioFile(audioFilePath: file)
-                }
-              }
+              refreshPickerOptions()
 
               if let firstFile = audioFileCollection.firstFile() {
                 selectedPickerOption = firstFile.audioFilePath.lastPathComponent
                 state.setFileTracklist(firstFile.tracklist)
+                navigateToURLFromSelectedFile()
               }
             } catch {
               self.error = error
@@ -223,8 +268,6 @@ struct TracklistEditorWebView: View {
           case .failure(let error):
             self.error = error
           }
-
-          refreshPickerOptions()
         }
       }
       .onAppear {

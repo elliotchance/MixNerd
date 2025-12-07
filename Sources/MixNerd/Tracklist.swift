@@ -9,6 +9,7 @@ struct Tracklist: @unchecked Sendable {
   var genre: String = ""
   var comment: String = ""
   var tracks: [Track] = []
+  var grouping: String = ""
 
   // e.g. https://1001.tl/1u7zqrvk
   var shortLink: URL?
@@ -40,6 +41,7 @@ struct Tracklist: @unchecked Sendable {
       genre: genre,
       comment: comment,
       tracks: updatedTracks,
+      grouping: grouping,
       shortLink: shortLink,
       duration: totalTime,
       audioFilePath: audioFilePath,

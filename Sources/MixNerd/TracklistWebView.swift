@@ -41,6 +41,11 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
     coordinatorRef.coordinator?.searchForTracklist(name: name)
   }
 
+  @MainActor
+  func navigateToURL(_ url: URL) {
+    coordinatorRef.coordinator?.navigateToURL(url)
+  }
+
   class Coordinator: NSObject, WKNavigationDelegate {
     let setTracklist: @Sendable (Tracklist?) -> Void
     weak var webView: WKWebView?
@@ -60,6 +65,12 @@ struct TracklistWebView: NSViewRepresentable {  // macOS, not iOS
           $('#sBoxBtn').click();
         """
       webView.evaluateJavaScript(js)
+    }
+
+    @MainActor
+    func navigateToURL(_ url: URL) {
+      guard let webView = webView else { return }
+      webView.load(URLRequest(url: url))
     }
 
     func attemptToExtractTracklist(webView: WKWebView) {

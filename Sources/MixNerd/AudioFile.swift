@@ -24,9 +24,9 @@ class AudioFile {
         date: Date(fromID3TagContentReader: tagContentReader),
         artist: AudioFile.stringValue(tagContentReader.artist()),
         title: AudioFile.stringValue(tagContentReader.title()),
-        source: AudioFile.stringValue(tagContentReader.iTunesGrouping() ?? ""),
         genre: AudioFile.stringValue(tagContentReader.genre()?.description),
         comment: AudioFile.stringValue(tagContentReader.comments().first?.content),
+        grouping: AudioFile.stringValue(tagContentReader.iTunesGrouping() ?? ""),
         duration: Time(at: TimeInterval(tagContentReader.lengthInMilliseconds() ?? 0) / 1000),
         audioFilePath: audioFilePath,
       )
@@ -38,16 +38,11 @@ class AudioFile {
   // Returns a new ID3Tag (which may lose some other fields). We only use the latest v2.4.
   // I'm not sure if this should be intended or not.
   func id3Tag() -> ID3Tag {
-    let albumFormat =
-      UserDefaults.standard.string(forKey: Settings.AlbumFormatKey) ?? Settings.AlbumFormatDefault
-    let albumTitle = formatter.format(
-      tracklist: tracklist ?? Tracklist(), format: albumFormat, escapeForPath: false)
-
     let id3Tag = ID32v4TagBuilder()
 
       // The title of the track and the album would be the same.
-      .title(frame: ID3FrameWithStringContent(content: albumTitle))
-      .album(frame: ID3FrameWithStringContent(content: albumTitle))
+      .title(frame: ID3FrameWithStringContent(content: tracklist?.title ?? ""))
+      .album(frame: ID3FrameWithStringContent(content: tracklist?.title ?? ""))
 
       // The track and album artist would also be the same.
       .albumArtist(frame: ID3FrameWithStringContent(content: tracklist?.artist ?? ""))
@@ -59,7 +54,7 @@ class AudioFile {
 
       // There is contentGrouping and iTunesGrouping. It seems like the iTunes one is the
       // most sensible, but maybe we should set both?
-      .iTunesGrouping(frame: ID3FrameWithStringContent(content: tracklist?.source ?? ""))
+      .iTunesGrouping(frame: ID3FrameWithStringContent(content: tracklist?.grouping ?? ""))
 
       // ID3v2.4 supports multiple comment frames with different languages.
       // I don't think the language is imporant, so we'll just choose eng for now.

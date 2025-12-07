@@ -7,22 +7,39 @@ class AudioFileCollection {
     self.audioFiles = [:]
   }
 
-  func addFolder(folderPath: URL) {
-    for file in FileManager.default.contentsOfDirectory(
-      at: folderPath, includingPropertiesForKeys: nil)
+  func addFolder(folderPath: URL) throws {
+    for file in try FileManager.default.contentsOfDirectory(
+      at: folderPath, includingPropertiesForKeys: [.isDirectoryKey])
     {
       if file.pathExtension == "mp3" {
-        print("Adding audio file: \(file)")
-        // addAudioFile(audioFilePath: file)
+        addAudioFile(audioFilePath: file)
       }
-      if file.isDirectory {
-        addFolder(folderPath: file)
+      if let resourceValues = try? file.resourceValues(forKeys: [.isDirectoryKey]),
+        resourceValues.isDirectory == true
+      {
+        try addFolder(folderPath: file)
       }
     }
   }
 
   func addAudioFile(audioFilePath: URL) {
     audioFiles[audioFilePath] = AudioFile(fromFilePath: audioFilePath)
+  }
+
+  func moveAudioFile(audioFile: AudioFile, to newPath: URL) throws {
+    // Create the destination folders(s), if needed.
+    let folderDestination = newPath.deletingLastPathComponent()
+    try FileManager.default.createDirectory(
+      at: folderDestination, withIntermediateDirectories: true, attributes: nil)
+
+    // Move audio file.
+    let oldAudioFilePath = audioFile.audioFilePath
+    try FileManager.default.moveItem(at: oldAudioFilePath, to: newPath)
+    audioFile.audioFilePath = newPath
+
+    // Update the index.
+    audioFiles[oldAudioFilePath] = nil
+    audioFiles[newPath] = audioFile
   }
 
   func audioFileByName(name: String) -> AudioFile? {
@@ -36,7 +53,7 @@ class AudioFileCollection {
   }
 
   func firstFile() -> AudioFile? {
-    return audioFiles.values.first
+    return allAudioFiles().first
   }
 
   func reset() {
