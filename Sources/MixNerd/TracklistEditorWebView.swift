@@ -166,6 +166,7 @@ struct TracklistEditorWebView: View {
               searchForTracklist: { name in
                 tracklistWebView?.searchForTracklist(name: name)
               },
+              audioDirectory: destinationFolder,
               save: {
                 if let audioFile = audioFileCollection.audioFileByName(name: selectedPickerOption),
                   let destinationFolder = destinationFolder

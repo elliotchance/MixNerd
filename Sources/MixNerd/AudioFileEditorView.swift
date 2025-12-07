@@ -10,16 +10,22 @@ struct AudioFileEditorView: View {
   @Binding var webTracklist: Tracklist  // TODO: Make this optional
   let titleHeight = 30.0
   let searchForTracklist: (String) -> Void
+  let audioDirectory: URL?
   let save: () throws -> Void
 
+  @AppStorage(Settings.RenameFilesKey) private var renameFiles: Bool = Settings.RenameFilesDefault
+  @AppStorage(Settings.RenameFileFormatKey) private var renameFileFormat: String = Settings
+    .RenameFileFormatDefault
   init(
     fileTracklist: Binding<Tracklist>, webTracklist: Binding<Tracklist>,
     searchForTracklist: @escaping (String) -> Void,
+    audioDirectory: URL?,
     save: @escaping () throws -> Void,
   ) {
     _fileTracklist = fileTracklist
     _webTracklist = webTracklist
     self.searchForTracklist = searchForTracklist
+    self.audioDirectory = audioDirectory
     self.save = save
   }
 
@@ -34,7 +40,7 @@ struct AudioFileEditorView: View {
             }
             searchForTracklist(searchString)
           }
-          Button("Save") {
+          Button(newFilePath() != fileTracklist.audioFilePath?.path ? "Save and Rename" : "Save") {
             do {
               try save()
             } catch let saveError {
@@ -45,6 +51,15 @@ struct AudioFileEditorView: View {
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.bottom)
+
+        if newFilePath() != fileTracklist.audioFilePath?.path {
+          Text("File will be renamed to:")
+            .foregroundColor(.orange)
+            .padding()
+
+          Text(newFilePath())
+            .padding(.bottom)
+        }
 
         if webTracklist.tracks.count > 0 {
           ArtworkView(artwork: Binding(get: { webTracklist.artwork }, set: { _ in }))
@@ -98,7 +113,7 @@ struct AudioFileEditorView: View {
           if estimatedCount > 1 {
             Text("\(estimatedCount)/\(totalCount) tracks have estimated times")
               .bold()
-              .foregroundColor(.red)
+              .foregroundColor(.orange)
               .padding(.bottom, 5)
           } else {
             Text("\(totalCount)/\(totalCount) have track times")
@@ -168,6 +183,20 @@ struct AudioFileEditorView: View {
         Text(error.localizedDescription)
       }
     }
+  }
+
+  func newFilePath() -> String {
+    if !renameFiles || webTracklist.shortLink == nil {
+      return fileTracklist.audioFilePath?.path ?? ""
+    }
+
+    let formatter = TracklistFormatter()
+    let newFileName = formatter.format(
+      tracklist: webTracklist,
+      format: renameFileFormat,
+      escapeForPath: true)
+    return audioDirectory?.appendingPathComponent(newFileName).appendingPathExtension("mp3").path
+      ?? ""
   }
 
   func trackAtIndex(_ tracklist: Tracklist, _ index: Int) -> Track {

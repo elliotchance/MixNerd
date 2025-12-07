@@ -27,10 +27,5 @@ The `.cue` file works with many players - including the awesome - [VOX](https://
 # TODO
 
 - Add navigation buttons for webview.
-- "Open..." does not cleanly refresh the second time.
-- Load first file on open.
-- Saving a file gives no feedback and does not remove from file list.
-- "Album" is hardcoded with the date.
-- Create the settings page.
 - Psy-Nation Radio 020 2019-08-15 shows the first track time as estimated but also 0:00.
-- If a URL is found in the comment it should load it.
+- Tracklist formatter compounds on itself with changes. Need to origina values.
