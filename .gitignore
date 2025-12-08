@@ -1,0 +1,6 @@
+.DS_Store
+.build/
+.vscode/
+swiftly.pkg
+MixNerd.app/
+MixNerd-*.zip
