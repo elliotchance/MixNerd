@@ -115,10 +115,6 @@ struct AudioFileEditorView: View {
                 .bold()
                 .foregroundColor(.orange)
                 .padding(.bottom, 5)
-            } else {
-              Text("\(totalCount)/\(totalCount) have track times")
-                .foregroundColor(.green)
-                .padding(.bottom, 5)
             }
 
             ScrollView {
@@ -162,7 +158,8 @@ struct AudioFileEditorView: View {
               .padding(.horizontal)
             }
           } else {
-            Text("Cue file will not be written. You can enable it in the Settings.")
+            Text("Cue file will not be written. You can enable this in the Settings.")
+              .padding()
           }
         } else {
           Text("No tracklist found. Please navigate to a tracklist page.")

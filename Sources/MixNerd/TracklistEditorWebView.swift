@@ -20,11 +20,11 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
     if var tl = tl {
       if format {
         let formatter = TracklistFormatter()
-        tl.artist = formatter.format(tracklist: tl, format: artistFormat, escapeForPath: false)  // Artist
-        tl.title = formatter.format(tracklist: tl, format: albumFormat, escapeForPath: false)  // Album
-        tl.genre = formatter.format(tracklist: tl, format: genreFormat, escapeForPath: false)  // Genre
-        tl.grouping = formatter.format(tracklist: tl, format: groupingFormat, escapeForPath: false)  // Grouping
-        tl.comment = formatter.format(tracklist: tl, format: commentFormat, escapeForPath: false)  // Comment
+        tl.artist = formatter.format(tracklist: tl, format: artistFormat, escapeForPath: false)
+        tl.title = formatter.format(tracklist: tl, format: albumFormat, escapeForPath: false)
+        tl.genre = formatter.format(tracklist: tl, format: genreFormat, escapeForPath: false)
+        tl.grouping = formatter.format(tracklist: tl, format: groupingFormat, escapeForPath: false)
+        tl.comment = formatter.format(tracklist: tl, format: commentFormat, escapeForPath: false)
       }
 
       webTracklist = tl.withEstimatedTrackTimes(totalTime: tl.duration)
@@ -293,7 +293,7 @@ struct TracklistEditorWebView: View {
                         }
                       }
                     } catch {
-                      // TODO: Show this to the user.
+                      self.error = error
                       throw error
                     }
                   }
@@ -359,6 +359,21 @@ struct TracklistEditorWebView: View {
       }
       .onChange(of: state.webTracklist?.duration.exact.description ?? "") { oldValue, newValue in
         duration = newValue
+      }
+      .alert(
+        "Error",
+        isPresented: Binding(
+          get: { error != nil },
+          set: { if !$0 { error = nil } }
+        )
+      ) {
+        Button("OK") {
+          error = nil
+        }
+      } message: {
+        if let error = error {
+          Text(error.localizedDescription)
+        }
       }
     }
   }

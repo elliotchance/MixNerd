@@ -55,24 +55,12 @@ class TracklistFormatter {
     return tracklist.date.description
   }
 
-  func artistComponent(tracklist: Tracklist) -> String {
-    return tracklist.artist
-  }
-
-  func titleComponent(tracklist: Tracklist) -> String {
-    return tracklist.title
-  }
-
   func sourceComponent(tracklist: Tracklist) -> String {
     return tracklist.source
   }
 
   func shortLinkComponent(tracklist: Tracklist) -> String {
     return tracklist.shortLink?.absoluteString ?? ""
-  }
-
-  func genreComponent(tracklist: Tracklist) -> String {
-    return tracklist.genre
   }
 
   /// Escapes a component for use in a path.

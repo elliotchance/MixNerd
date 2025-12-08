@@ -3,6 +3,8 @@ import UniformTypeIdentifiers
 
 struct ArtworkView: View {
   @Binding var artwork: Artwork
+  @State private var errorMessage: String?
+  @State private var showError = false
 
   var body: some View {
     VStack(spacing: 12) {
@@ -17,8 +19,8 @@ struct ArtworkView: View {
                 do {
                   try saveArtwork(artwork)
                 } catch {
-                  // TODO: Show this to the user.
-                  print("Error saving artwork: \(error)")
+                  errorMessage = "Error saving artwork: \(error.localizedDescription)"
+                  showError = true
                 }
               }) {
                 Label("Save", systemImage: "square.and.arrow.down")
@@ -30,6 +32,13 @@ struct ArtworkView: View {
           Color.gray
             .overlay(Text("No image").foregroundColor(.white))
         }
+      }
+    }
+    .alert("Error", isPresented: $showError) {
+      Button("OK", role: .cancel) {}
+    } message: {
+      if let errorMessage = errorMessage {
+        Text(errorMessage)
       }
     }
   }

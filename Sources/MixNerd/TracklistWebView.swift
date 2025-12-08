@@ -147,8 +147,11 @@ struct TracklistWebView: NSViewRepresentable {
 
     @MainActor
     func searchForTracklist(name: String) {
-      // TODO: We might need to redirect to a search page first.
-      // let url = URL(string: "https://www.1001tracklists.com/")!
+      nonisolated(unsafe) let navState = navigationState
+      if !(navState.currentURL?.host?.contains("1001tracklists.com") ?? false) {
+        navigateToURL(URL(string: "https://www.1001tracklists.com/")!)
+        return
+      }
 
       guard let webView = webView else { return }
       let js = """

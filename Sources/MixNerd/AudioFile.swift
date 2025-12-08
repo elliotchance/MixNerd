@@ -7,9 +7,6 @@ class AudioFile {
   // The path to the audio file
   var audioFilePath: URL
 
-  // The path to the cue file, if if exists
-  var cueFilePath: URL?
-
   var tracklist: Tracklist?
 
   init(fromFilePath file: URL) {
@@ -39,10 +36,8 @@ class AudioFile {
     }
   }
 
-  private var formatter: TracklistFormatter = TracklistFormatter()
-
-  // Returns a new ID3Tag (which may lose some other fields). We only use the latest v2.4.
-  // I'm not sure if this should be intended or not.
+  /// Returns a new ID3Tag (which may lose some other fields). We only use the latest v2.4.
+  /// I'm not sure if this should be intended or not.
   func id3Tag() -> ID3Tag {
     let id3Tag = ID32v4TagBuilder()
 
@@ -113,8 +108,8 @@ class AudioFile {
   }
 
   func writeCUEFile() {
-    cueFilePath = audioFilePath.deletingPathExtension().appendingPathExtension("cue")
+    let cueFilePath = audioFilePath.deletingPathExtension().appendingPathExtension("cue")
     let content = cueFile().content()
-    try? content.write(to: cueFilePath!, atomically: true, encoding: .utf8)
+    try? content.write(to: cueFilePath, atomically: true, encoding: .utf8)
   }
 }

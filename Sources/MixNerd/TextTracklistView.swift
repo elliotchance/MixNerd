@@ -113,34 +113,30 @@ struct TextTracklistView: View {
 
   @MainActor
   private func saveTracklistToFile() {
-    #if os(macOS)
-      let panel = NSSavePanel()
-      if #available(macOS 12.0, *) {
-        panel.allowedContentTypes = [.plainText]
-      } else {
-        panel.allowedFileTypes = ["txt"]
-      }
-      panel.canCreateDirectories = true
-      panel.nameFieldStringValue = "\(sanitizedTracklistTitle()).txt"
+    let panel = NSSavePanel()
+    if #available(macOS 12.0, *) {
+      panel.allowedContentTypes = [.plainText]
+    } else {
+      panel.allowedFileTypes = ["txt"]
+    }
+    panel.canCreateDirectories = true
+    panel.nameFieldStringValue = "\(sanitizedTracklistTitle()).txt"
 
-      panel.begin { response in
-        guard response == .OK, let url = panel.url else {
-          return
-        }
-
-        do {
-          try tracklistText().write(to: url, atomically: true, encoding: .utf8)
-        } catch {
-          let alert = NSAlert()
-          alert.messageText = "Unable to Save Tracklist"
-          alert.informativeText = error.localizedDescription
-          alert.alertStyle = .warning
-          alert.runModal()
-        }
+    panel.begin { response in
+      guard response == .OK, let url = panel.url else {
+        return
       }
-    #else
-      copyTracklistToClipboard()
-    #endif
+
+      do {
+        try tracklistText().write(to: url, atomically: true, encoding: .utf8)
+      } catch {
+        let alert = NSAlert()
+        alert.messageText = "Unable to Save Tracklist"
+        alert.informativeText = error.localizedDescription
+        alert.alertStyle = .warning
+        alert.runModal()
+      }
+    }
   }
 
   private func sanitizedTracklistTitle() -> String {
