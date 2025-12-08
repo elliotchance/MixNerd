@@ -31,4 +31,12 @@ class Settings {
 
   static let WriteURLFileKey = "settings.write_url_file"
   static let WriteURLFileDefault = false
+
+  // Text tracklists
+  static let TextTracklistsEstimateMissingTrackTimesKey =
+    "settings.text_tracklists_estimate_missing_track_times"
+  static let TextTracklistsEstimateMissingTrackTimesDefault = false
+
+  static let TextTracklistsIncludeLabelsKey = "settings.text_tracklists_include_labels"
+  static let TextTracklistsIncludeLabelsDefault = true
 }

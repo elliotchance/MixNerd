@@ -7,6 +7,7 @@ MixNerd is perfect for tagging and organizing your downloaded mp3 files. It can:
 1. **Save MP3 tags** including artist, title, date and cover art from 1001tracklists.com.
 2. **Move and rename files** on save.
 3. **Generate `.cue` files**, even when some track times are missing.
+4. **Text tracklists** can be copied to saved.
 
 # Quick Start
 

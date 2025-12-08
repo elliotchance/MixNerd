@@ -48,9 +48,6 @@ struct TracklistEditorWebView: View {
   @State private var isOpeningFile: Bool = false
   @State private var showAlert: Bool = false
   @State private var error: Error?
-  @AppStorage("TextTracklistView_estimateMissingTrackTimes") private var estimateMissingTrackTimes:
-    Bool = false
-  @AppStorage("TextTracklistView_includeLabels") private var includeLabels: Bool = true
   private let initialURL = URL(string: "https://www.1001tracklists.com/")!
   private let tracklistWebViewWidth = 400.0
   @State private var pickerOptions: [String]
@@ -61,6 +58,11 @@ struct TracklistEditorWebView: View {
   @StateObject private var navigationState = NavigationState()
   @State private var urlText: String = ""
   @State private var destinationFolder: URL?
+
+  @AppStorage(Settings.TextTracklistsEstimateMissingTrackTimesKey) private
+    var estimateMissingTrackTimes: Bool = Settings.TextTracklistsEstimateMissingTrackTimesDefault
+  @AppStorage(Settings.TextTracklistsIncludeLabelsKey) private var includeLabels: Bool = Settings
+    .TextTracklistsIncludeLabelsDefault
 
   @AppStorage(Settings.RenameFilesKey) private var renameFiles: Bool = Settings.RenameFilesDefault
   @AppStorage(Settings.RenameFileFormatKey) private var renameFileFormat: String = Settings
