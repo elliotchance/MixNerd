@@ -116,7 +116,7 @@ func testTracklistFormatter_yearComponent_returnsYearString() {
 @Test
 func testTracklistFormatter_artistComponent_returnsArtistString() {
   var tracklist = Tracklist()
-  tracklist.artist = "Artist"
+  tracklist.artistComponent = "Artist"
 
   let formatter = TracklistFormatter()
   #expect(formatter.artistComponent(tracklist: tracklist) == "Artist")

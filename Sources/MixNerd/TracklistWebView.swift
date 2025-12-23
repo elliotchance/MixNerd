@@ -221,8 +221,8 @@ struct TracklistWebView: NSViewRepresentable {
                   result.genre = genre;
               }
 
-              // Extract source
-              const source = $('h1 a[href^="/source/"]').text();
+              // Extract source. Only take the first listed source.
+              const source = $('h1 a[href^="/source/"]').first().text();
               if (source) {
                   result.source = source;
               }
