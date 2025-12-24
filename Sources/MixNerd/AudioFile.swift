@@ -9,12 +9,15 @@ class AudioFile {
 
   var tracklist: Tracklist?
 
-  init(fromFilePath file: URL) {
+  init(fromFilePath file: URL) async throws {
     audioFilePath = file
 
+    let asset = AVURLAsset(url: file, options: nil)
     let id3TagEditor = ID3TagEditor()
     if let id3Tag = try? id3TagEditor.read(from: file.path) {
       let tagContentReader = ID3TagContentReader(id3Tag: id3Tag)
+
+      let duration = try await asset.load(.duration)
 
       tracklist = Tracklist(
         artwork: Artwork(fromID3Tag: id3Tag),
@@ -27,7 +30,7 @@ class AudioFile {
         tracks: [],
         grouping: AudioFile.stringValue(tagContentReader.iTunesGrouping() ?? ""),
         shortLink: nil,
-        duration: Time(at: TimeInterval(tagContentReader.lengthInMilliseconds() ?? 0) / 1000),
+        duration: Time(at: TimeInterval(duration.seconds)),
         audioFilePath: audioFilePath,
         artistComponent: AudioFile.stringValue(tagContentReader.artist()),
         titleComponent: AudioFile.stringValue(tagContentReader.title()),
