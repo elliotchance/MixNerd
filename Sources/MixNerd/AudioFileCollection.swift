@@ -7,23 +7,23 @@ class AudioFileCollection {
     self.audioFiles = [:]
   }
 
-  func addFolder(folderPath: URL) throws {
+  func addFolder(folderPath: URL) async throws {
     for file in try FileManager.default.contentsOfDirectory(
       at: folderPath, includingPropertiesForKeys: [.isDirectoryKey])
     {
       if file.pathExtension == "mp3" {
-        addAudioFile(audioFilePath: file)
+        try await addAudioFile(audioFilePath: file)
       }
       if let resourceValues = try? file.resourceValues(forKeys: [.isDirectoryKey]),
         resourceValues.isDirectory == true
       {
-        try addFolder(folderPath: file)
+        try await addFolder(folderPath: file)
       }
     }
   }
 
-  func addAudioFile(audioFilePath: URL) {
-    audioFiles[audioFilePath] = AudioFile(fromFilePath: audioFilePath)
+  func addAudioFile(audioFilePath: URL) async throws {
+    audioFiles[audioFilePath] = try await AudioFile(fromFilePath: audioFilePath)
   }
 
   func moveAudioFile(audioFile: AudioFile, to newPath: URL) throws {

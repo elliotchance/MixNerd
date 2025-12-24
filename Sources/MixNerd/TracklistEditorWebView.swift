@@ -27,7 +27,14 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
         tl.comment = formatter.format(tracklist: tl, format: commentFormat, escapeForPath: false)
       }
 
-      webTracklist = tl.withEstimatedTrackTimes(totalTime: tl.duration)
+      // If we have a file open, we should always trust that length over the web.
+      // Especially since the web tracklist may not have a duration.
+      var duration = tl.duration
+      if let fileTracklist = fileTracklist {
+        duration = fileTracklist.duration
+      }
+
+      webTracklist = tl.withEstimatedTrackTimes(totalTime: duration)
     } else {
       webTracklist = nil
     }
@@ -318,30 +325,36 @@ struct TracklistEditorWebView: View {
           case .success(let urls):
             guard let selectedFolder = urls.first else { return }
             destinationFolder = selectedFolder
-            do {
-              // Start accessing the security-scoped resource
-              guard selectedFolder.startAccessingSecurityScopedResource() else {
-                throw NSError(
-                  domain: "FileAccessError", code: 0,
-                  userInfo: [NSLocalizedDescriptionKey: "Could not access the selected folder."])
+            Task {
+              do {
+                // Start accessing the security-scoped resource
+                guard selectedFolder.startAccessingSecurityScopedResource() else {
+                  throw NSError(
+                    domain: "FileAccessError", code: 0,
+                    userInfo: [NSLocalizedDescriptionKey: "Could not access the selected folder."])
+                }
+                defer {
+                  selectedFolder.stopAccessingSecurityScopedResource()
+                }
+
+                audioFileCollection.reset()
+
+                try await audioFileCollection.addFolder(folderPath: selectedFolder)
+
+                await MainActor.run {
+                  refreshPickerOptions()
+
+                  if let firstFile = audioFileCollection.firstFile() {
+                    selectedPickerOption = firstFile.audioFilePath.lastPathComponent
+                    state.setFileTracklist(firstFile.tracklist)
+                    navigateToURLFromSelectedFile()
+                  }
+                }
+              } catch {
+                await MainActor.run {
+                  self.error = error
+                }
               }
-              defer {
-                selectedFolder.stopAccessingSecurityScopedResource()
-              }
-
-              audioFileCollection.reset()
-
-              try audioFileCollection.addFolder(folderPath: selectedFolder)
-
-              refreshPickerOptions()
-
-              if let firstFile = audioFileCollection.firstFile() {
-                selectedPickerOption = firstFile.audioFilePath.lastPathComponent
-                state.setFileTracklist(firstFile.tracklist)
-                navigateToURLFromSelectedFile()
-              }
-            } catch {
-              self.error = error
             }
           case .failure(let error):
             self.error = error

@@ -6,9 +6,9 @@ import Testing
 struct AudioFileTests {
 
   @Test
-  func testCueFileContent_withTracklist() {
+  func testCueFileContent_withTracklist() async throws {
     let audioFileURL = URL(fileURLWithPath: "/tmp/test-audio.mp3")
-    let audioFile = AudioFile(fromFilePath: audioFileURL)
+    let audioFile = try await AudioFile(fromFilePath: audioFileURL)
 
     let date = Date(year: 2025, month: 2, day: 11)
     var tracklist = Tracklist()
