@@ -102,7 +102,7 @@ class AudioFile {
   func cueFile() -> CueFile {
     return CueFile(
       performer: tracklist?.artist ?? "",
-      title: "\(tracklist?.date.description ?? "") \(tracklist?.title ?? "")",
+      title: tracklist?.title ?? "",
       file: audioFilePath.lastPathComponent,
       tracks: tracklist?.tracks.map {
         CueTrack(performer: $0.artist, title: $0.title, time: .seconds($0.time.at))
