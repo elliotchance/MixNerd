@@ -309,9 +309,7 @@ struct TracklistEditorWebView: View {
                 }
               }
             )
-            .onChange(of: selectedPickerOption) { _, newValue in
-              navigateToURLFromSelectedFile()
-            }
+
           }
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
