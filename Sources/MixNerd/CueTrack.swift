@@ -20,6 +20,6 @@ class CueTrack {
 
   func indexTime() -> String {
     let seconds = time.components.seconds
-    return String(format: "%d:%02d:00", seconds / 60, seconds % 60)
+    return String(format: "%02d:%02d:00", seconds / 60, seconds % 60)
   }
 }

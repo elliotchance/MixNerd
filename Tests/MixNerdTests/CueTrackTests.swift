@@ -13,7 +13,7 @@ struct CueTrackTests {
           TRACK 01 AUDIO
             PERFORMER "Migdalor"
             TITLE "Realest Of The Real"
-            INDEX 01 0:00:00
+            INDEX 01 00:00:00
         """)
   }
 
@@ -25,7 +25,7 @@ struct CueTrackTests {
           TRACK 13 AUDIO
             PERFORMER "Atopia"
             TITLE "Between Two Worlds"
-            INDEX 01 0:08:00
+            INDEX 01 00:08:00
         """)
   }
 

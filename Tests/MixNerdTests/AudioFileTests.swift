@@ -38,11 +38,11 @@ struct AudioFileTests {
         TRACK 01 AUDIO
           PERFORMER "Artist 1"
           TITLE "Track 1"
-          INDEX 01 0:00:00
+          INDEX 01 00:00:00
         TRACK 02 AUDIO
           PERFORMER "Artist 2"
           TITLE "Track 2"
-          INDEX 01 5:30:00
+          INDEX 01 05:30:00
         TRACK 03 AUDIO
           PERFORMER "Artist 3"
           TITLE "Track 3"
