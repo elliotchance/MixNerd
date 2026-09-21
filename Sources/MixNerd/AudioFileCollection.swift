@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 class AudioFileCollection {
   var audioFiles: [URL: AudioFile]
 
