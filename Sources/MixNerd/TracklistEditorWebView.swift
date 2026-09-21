@@ -297,7 +297,7 @@ struct TracklistEditorWebView: View {
                       if writeCueFile {
                         // Cue file is written to the same folder as the audio file,
                         // which was updated if renamed above.
-                        audioFile.writeCUEFile()
+                        try audioFile.writeCUEFile()
                       }
 
                       if writeURLFile {

@@ -99,7 +99,38 @@ class AudioFile {
     return ""
   }
 
-  func cueFile() -> CueFile {
+  /// A known (non-estimated) track time may exceed the real file duration by up to this many
+  /// seconds before we treat it as bad data (e.g. the web tracklist's linked audio stream being
+  /// longer than the local file) rather than a rounding or encoding difference.
+  static let trackTimeDurationTolerance: TimeInterval = 5.0
+
+  /// Checks that no known (non-estimated) track time falls past the end of the actual audio
+  /// file. This catches the case where 1001tracklists' linked audio stream is longer than the
+  /// file we actually have on disk, which would otherwise silently produce a CUE file with
+  /// tracks pointing past the end of the audio.
+  func validateTrackTimes() throws {
+    guard let tracklist = tracklist, let fileDuration = self.tracklist?.duration.at,
+      fileDuration > 0
+    else {
+      return
+    }
+
+    for (index, track) in tracklist.tracks.enumerated() {
+      guard !track.time.isEstimated else {
+        continue
+      }
+      if track.time.at > fileDuration + AudioFile.trackTimeDurationTolerance {
+        throw MixNerdError.trackTimeExceedsFileDuration(
+          trackNumber: index + 1,
+          trackTime: track.time.at,
+          fileDuration: fileDuration)
+      }
+    }
+  }
+
+  func cueFile() throws -> CueFile {
+    try validateTrackTimes()
+
     return CueFile(
       performer: tracklist?.artist ?? "",
       title: tracklist?.title ?? "",
@@ -110,9 +141,9 @@ class AudioFile {
     )
   }
 
-  func writeCUEFile() {
+  func writeCUEFile() throws {
     let cueFilePath = audioFilePath.deletingPathExtension().appendingPathExtension("cue")
-    let content = cueFile().content()
-    try? content.write(to: cueFilePath, atomically: true, encoding: .utf8)
+    let content = try cueFile().content()
+    try content.write(to: cueFilePath, atomically: true, encoding: .utf8)
   }
 }
