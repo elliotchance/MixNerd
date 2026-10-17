@@ -23,7 +23,7 @@ struct AudioFileTests {
 
     audioFile.tracklist = tracklist
 
-    let content = audioFile.cueFile().content()
+    let content = try audioFile.cueFile().content()
 
     // Extract the dynamic date line
     let lines = content.components(separatedBy: "\n")
@@ -50,5 +50,49 @@ struct AudioFileTests {
       """
 
     #expect(content == expected)
+  }
+
+  @Test
+  func testCueFile_throwsWhenTrackTimesExceedFileDuration() async throws {
+    // Reproduces a real-world MixNerd bug: 1001tracklists' linked audio stream for this mix
+    // reports track times up to 113:45 (6825s), but the actual downloaded file is only
+    // 3829.33s (~63:49) long. Generating a CUE from these times would place the last several
+    // tracks past the end of the audio.
+    let audioFileURL = URL(fileURLWithPath: "/tmp/test-audio-fsoe818.mp3")
+    let audioFile = try await AudioFile(fromFilePath: audioFileURL)
+
+    var tracklist = Tracklist()
+    tracklist.artist = "Aly & Fila"
+    tracklist.title = "2023-08-09 Future Sound of Egypt #818"
+    tracklist.duration = Time(at: 3829.33)
+    tracklist.tracks = [
+      Track(time: Time(string: "0:50"), artist: "Kris O'Neil", title: "Speelplaats"),
+      Track(time: Time(string: "99:29"), artist: "Stoneface & Terminal", title: "Access"),
+      Track(time: Time(string: "113:45"), artist: "Craig Connelly", title: "Nathan's Song"),
+    ]
+    audioFile.tracklist = tracklist
+
+    #expect(throws: MixNerdError.self) {
+      try audioFile.cueFile()
+    }
+  }
+
+  @Test
+  func testCueFile_succeedsWhenTrackTimesAreWithinFileDuration() async throws {
+    let audioFileURL = URL(fileURLWithPath: "/tmp/test-audio-ok.mp3")
+    let audioFile = try await AudioFile(fromFilePath: audioFileURL)
+
+    var tracklist = Tracklist()
+    tracklist.artist = "Aly & Fila"
+    tracklist.title = "Future Sound of Egypt #818"
+    tracklist.duration = Time(at: 3829.33)
+    tracklist.tracks = [
+      Track(time: Time(string: "0:50"), artist: "Kris O'Neil", title: "Speelplaats"),
+      Track(time: Time(string: "52:45"), artist: "Jon Mangan", title: "Reinvigorate"),
+    ]
+    audioFile.tracklist = tracklist
+
+    let content = try audioFile.cueFile().content()
+    #expect(content.contains("Reinvigorate"))
   }
 }
