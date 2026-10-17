@@ -44,6 +44,12 @@ class TracklistEditorState: ObservableObject, @unchecked Sendable {
   func setFileTracklist(_ tl: Tracklist?) {
     if let tl = tl {
       fileTracklist = tl.withEstimatedTrackTimes(totalTime: tl.duration)
+
+      // The web tracklist may have been loaded before the file, in which case its estimated
+      // times were based on the web duration. Re-estimate now that we have the real length.
+      if let webTracklist = webTracklist {
+        self.webTracklist = webTracklist.withEstimatedTrackTimes(totalTime: tl.duration)
+      }
     } else {
       fileTracklist = nil
     }
